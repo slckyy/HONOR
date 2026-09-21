@@ -25,7 +25,7 @@ a94fa8bdf6207693f50daf54b82bb46c1f5c8868b28197585461ec7e88d64e71  ./apps/web/app
 2d387102f10eaf7b61dab1748a88d20993896e9ab1c13ce56f8e5ba12f37db44  ./apps/web/app/page.tsx
 ca541b5d803c52f006e294a32f1e2f70ef8c4aa0b6b6208fc05dd17ccbd01522  ./apps/web/components/login-form.tsx
 2651266611fe86e8509daa3d758df6fc762837961c21d523d9749640568ba26d  ./apps/web/components/network-status.tsx
-c1f275acb90d8ce33eb2caddb73e0ae7df786fe4d1ab30bd51ce5c751d211aec  ./apps/web/components/pwa-boot.tsx
+15bcc2c233ddf41018cbf08aa5c06a64d9c9c88050105d1cbc439e41f8826fed  ./apps/web/components/pwa-boot.tsx
 72ae31004db9c8081bb32ac01328e98260035138567b7be1e9cccfa7c4a74c7d  ./apps/web/components/recover-form.tsx
 99bd27e7ae81365339f7447acaf0ff93251007555fe8708c8062191e67f32869  ./apps/web/components/set-password-form.tsx
 e99b0a7f45c5cbf56ee8839963ca9239d6afd9aa279140861d3713dc0bccf471  ./apps/web/lib/api-client.ts
