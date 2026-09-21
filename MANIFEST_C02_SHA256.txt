@@ -45,7 +45,6 @@ bc52526f2b92969faadca4f886eb7d262cb69739ebf2b174e54f7a7b65782926  ./apps/web/pac
 e336c65d56597d59407816c4a255c3ceea07c798aa967a0516ebfe5c01c2ebee  ./apps/web/public/sw.js
 3680fbf7f11ec7710d90afdcdc996b0f02e852b95559d916e4db8647f1524b08  ./apps/web/tests/security.test.mjs
 6ed96ea65654cd7a174a6eef6492fa4063454414c883a699ba5e3abcc3e7f728  ./apps/web/tsconfig.json
-c3293ec1dc5ba8797cbf8e010a80c2832928146c726539b4e93c32e14a2608ce  ./apps/web/tsconfig.tsbuildinfo
 1d59704c709978d2137d4c17e169af5ecf199149dbc4dbbd567d1aef860477ae  ./docker-compose.yml
 cfa0f7020fda37dc733ce329d830d8e6d2f6dee1f7fe1e6ccc44267352ff07f2  ./docs/architecture/c00-approved/.env.example
 04a4e3e5f82e72956ebddafa0d71738fe429dc79aa9f78db92c8ed9369e1c23b  ./docs/architecture/c00-approved/CHECKPOINT_C00_REPORT.md
@@ -232,7 +231,7 @@ e7fdd078596f4d743f7fda08a65a3dd397745c280563c280ecf0236327834a73  ./packages/des
 0270e13e22df9691181cece66584bd86478f3d6f7d3e44ebaaa297cbdc153bc1  ./requirements.lock
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./scripts/__init__.py
 08328b7c38eb70196bd0d479a1127b15f14adf80d429f4fc2cec7de50923ffd0  ./scripts/check_c01_manifest.py
-dbc750bb67b9ea2a8cd35271443d80020ab7cf8ddc48e9d7bbfd6bdde4633c8d  ./scripts/check_c02_manifest.py
+89454da6da9d5ebcd5a24c723d6b665693c97ba1c4a29e1dfac72911a0d37913  ./scripts/check_c02_manifest.py
 755fa67b97ec0c58c227a275998055580ac4d948745305302b4dcf258ffe21af  ./scripts/check_contract_drift.py
 2a54b5adb569cab71604090c9159e171c0654c27f6c6ebb2fddc4b47295789e1  ./scripts/check_lockfiles.py
 494b23ba5dd6959d191f1b9d6087e235a0fbd3bee027fb331ed9a516019be39e  ./scripts/compare_python_lock.py

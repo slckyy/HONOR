@@ -15,7 +15,7 @@ EXCLUDED_PARTS = {
     "__pycache__",
     "node_modules",
 }
-EXCLUDED_SUFFIXES = {".pyc", ".pyo"}
+EXCLUDED_SUFFIXES = {".pyc", ".pyo", ".tsbuildinfo"}
 
 
 def release_files() -> dict[str, str]:
