@@ -4,7 +4,7 @@ on:
   push:
     branches: [c01-r2-sync]
     paths:
-      - 'bootstrap/r2/READY'
+      - 'bootstrap/r2u/READY'
 
 permissions:
   contents: write
@@ -21,9 +21,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat bootstrap/r2/[0-9][0-9] > /tmp/honor.tar.xz.b64
+          cat bootstrap/r2u/[0-9][0-9] > /tmp/honor.tar.xz.b64
           base64 --decode /tmp/honor.tar.xz.b64 > /tmp/honor.tar.xz
-          echo 'fc95a5f2f4a362ca0af9e49b5a8dde25e757f5e125a6468c0f3374a1048f2cde  /tmp/honor.tar.xz' | sha256sum -c -
+          echo 'd8788127fe9ddd65a79d01317678ee963805e993d50e5ad62ab971dd99808ed2  /tmp/honor.tar.xz' | sha256sum -c -
           git rm -rf .
           tar -xJf /tmp/honor.tar.xz -C .
           git add -A
