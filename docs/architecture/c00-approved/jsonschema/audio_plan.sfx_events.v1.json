@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/audio_plan.sfx_events.v1.json",
+  "title": "audio_plan.sfx_events.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "at_ms": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "category": {
+        "type": "string",
+        "enum": [
+          "WHOOSH",
+          "TICK",
+          "POP",
+          "IMPACT",
+          "BASS_HIT",
+          "RISER",
+          "DOWNLIFTER",
+          "TRANSITION_SWEEP",
+          "STINGER",
+          "AMBIENCE"
+        ]
+      },
+      "asset_id": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "gain_db": {
+        "type": "number",
+        "minimum": -60,
+        "maximum": 12
+      },
+      "semantic_reason": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "at_ms",
+      "category",
+      "asset_id",
+      "gain_db",
+      "semantic_reason"
+    ]
+  },
+  "minItems": 0,
+  "maxItems": 200,
+  "x-honor-writer": "intelligence|media"
+}

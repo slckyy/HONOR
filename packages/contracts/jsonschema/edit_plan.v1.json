@@ -1,0 +1,1179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/edit_plan.v1.json",
+  "title": "edit_plan.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "x-honor-writer": "media|intelligence",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "plan_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "candidate_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source_asset_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "campaign_rule_snapshot_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "description": "V1 compatibility field with exactly one item: the authoritative immutable sealed campaign rule snapshot for this edit plan."
+    },
+    "source_rights_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source_rights_record_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "supersedes_edit_plan_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "plan_fingerprint_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "fingerprint_rule": {
+      "const": "SHA256_RFC8785_CANONICAL_JSON_EXCLUDING_plan_fingerprint_sha256"
+    },
+    "timeline": {
+      "type": "object",
+      "properties": {
+        "timing_guard": {
+          "const": "WORD_OR_PHONEME_BOUNDARY_WHEN_TIMING_AVAILABLE"
+        },
+        "cuts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "cut_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,80}$"
+              },
+              "source_start_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "source_end_ms": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "output_start_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "output_end_ms": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "HOOK",
+                  "CONTEXT",
+                  "CONTENT",
+                  "DEAD_AIR_TIGHTENING",
+                  "PACING",
+                  "OTHER"
+                ]
+              },
+              "boundary_alignment": {
+                "type": "string",
+                "enum": [
+                  "WORD_BOUNDARY",
+                  "PHONEME_BOUNDARY",
+                  "FRAME_ONLY_NO_TIMING_DATA"
+                ]
+              },
+              "source_word_start_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source_word_end_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "transition": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "CUT",
+                      "DISSOLVE",
+                      "DIP_TO_BLACK"
+                    ]
+                  },
+                  "duration_ms": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "type",
+                  "duration_ms"
+                ]
+              },
+              "playback_rate": {
+                "type": "number",
+                "minimum": 0.25,
+                "maximum": 4
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "cut_id",
+              "source_start_ms",
+              "source_end_ms",
+              "output_start_ms",
+              "output_end_ms",
+              "reason",
+              "boundary_alignment",
+              "source_word_start_id",
+              "source_word_end_id",
+              "transition",
+              "playback_rate"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 250
+        },
+        "dead_air_decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source_start_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "source_end_ms": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "REMOVE",
+                  "SHORTEN",
+                  "KEEP"
+                ]
+              },
+              "retained_duration_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "source_start_ms",
+              "source_end_ms",
+              "action",
+              "retained_duration_ms",
+              "reason"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 250
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "timing_guard",
+        "cuts",
+        "dead_air_decisions"
+      ]
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "safe_frame": {
+          "type": "object",
+          "properties": {
+            "left": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.4
+            },
+            "right": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.4
+            },
+            "top": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.4
+            },
+            "bottom": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.4
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "left",
+            "right",
+            "top",
+            "bottom"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "start_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end_ms": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE_SPEAKER",
+                  "FACE_TRACK",
+                  "CENTER_SAFE",
+                  "SPLIT",
+                  "STACKED",
+                  "PODCAST"
+                ]
+              },
+              "speaker_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "minItems": 0,
+                "maxItems": 4,
+                "uniqueItems": true
+              },
+              "center_x": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "center_y": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "scale": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 2.25
+              },
+              "pan_x": {
+                "type": "number",
+                "minimum": -1,
+                "maximum": 1
+              },
+              "pan_y": {
+                "type": "number",
+                "minimum": -1,
+                "maximum": 1
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "start_ms",
+              "end_ms",
+              "mode",
+              "speaker_ids",
+              "center_x",
+              "center_y",
+              "scale",
+              "pan_x",
+              "pan_y",
+              "confidence"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 600
+        },
+        "speaker_switches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "at_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "from_speaker_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "to_speaker_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "transition_ms": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "at_ms",
+              "from_speaker_id",
+              "to_speaker_id",
+              "transition_ms"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 200
+        },
+        "punch_ins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "start_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end_ms": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "scale": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 2.25
+              },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "EMPHASIS",
+                  "SPEAKER_CHANGE",
+                  "HOOK",
+                  "PAYOFF"
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "start_ms",
+              "end_ms",
+              "scale",
+              "reason"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "reframing_mode": {
+          "type": "string",
+          "enum": [
+            "CROP_ALLOWED",
+            "FIT_NO_CROP"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "reframing_mode",
+        "safe_frame",
+        "events",
+        "speaker_switches",
+        "punch_ins"
+      ]
+    },
+    "captions": {
+      "type": "object",
+      "properties": {
+        "style_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "timing_mode": {
+          "type": "string",
+          "enum": [
+            "PHRASE",
+            "WORD"
+          ]
+        },
+        "safe_placement": {
+          "const": true
+        },
+        "max_lines": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "start_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end_ms": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "emphasis_tokens": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "minItems": 0,
+                "maxItems": 30
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "start_ms",
+              "end_ms",
+              "text",
+              "emphasis_tokens"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 1200
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "style_ref",
+        "timing_mode",
+        "safe_placement",
+        "max_lines",
+        "chunks"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            },
+            "required": [
+              "enabled"
+            ]
+          },
+          "then": {
+            "properties": {
+              "chunks": {
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "chunks": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visual_emphasis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "start_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end_ms": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "TEXT_ACCENT",
+              "CALLOUT",
+              "SUBTLE_ZOOM",
+              "FOCUS_SHIFT"
+            ]
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "intensity": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "start_ms",
+          "end_ms",
+          "type",
+          "content",
+          "intensity"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 100
+    },
+    "audio_cleanup": {
+      "type": "object",
+      "properties": {
+        "dialogue_normalization": {
+          "type": "boolean"
+        },
+        "target_integrated_lufs": {
+          "type": "number",
+          "minimum": -24,
+          "maximum": -10
+        },
+        "true_peak_ceiling_dbtp": {
+          "type": "number",
+          "minimum": -6,
+          "maximum": -0.1
+        },
+        "noise_handling": {
+          "type": "string",
+          "enum": [
+            "NONE",
+            "LIGHT",
+            "ADAPTIVE"
+          ]
+        },
+        "limiter_enabled": {
+          "const": true
+        },
+        "preserve_natural_dynamics": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "dialogue_normalization",
+        "target_integrated_lufs",
+        "true_peak_ceiling_dbtp",
+        "noise_handling",
+        "limiter_enabled",
+        "preserve_natural_dynamics"
+      ]
+    },
+    "audio_plan_reference": {
+      "type": "object",
+      "properties": {
+        "audio_plan_required": {
+          "type": "boolean"
+        },
+        "audio_plan_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "separation_rule": {
+          "const": "RENDER_SAFE_AUDIO_SEPARATE_FROM_PLATFORM_NATIVE_RECOMMENDATION"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "audio_plan_required",
+        "audio_plan_id",
+        "separation_rule"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "canvas_width": {
+          "const": 1080
+        },
+        "canvas_height": {
+          "const": 1920
+        },
+        "aspect_ratio": {
+          "const": "9:16"
+        },
+        "fps": {
+          "type": "integer",
+          "enum": [
+            30,
+            60
+          ]
+        },
+        "target_codec": {
+          "const": "H264"
+        },
+        "uniqueness_inputs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "maxItems": 50,
+          "uniqueItems": true
+        },
+        "render_manifest_schema_id": {
+          "const": "render_manifest.v1"
+        },
+        "renderer_must_record_plan_hash": {
+          "const": true
+        },
+        "watermark": {
+          "const": false
+        },
+        "render_manifest_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expected_duration_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600000
+        },
+        "edit_signature_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "canvas_width",
+        "canvas_height",
+        "aspect_ratio",
+        "fps",
+        "target_codec",
+        "uniqueness_inputs",
+        "render_manifest_id",
+        "render_manifest_schema_id",
+        "renderer_must_record_plan_hash",
+        "watermark",
+        "expected_duration_ms",
+        "edit_signature_sha256"
+      ]
+    },
+    "rule_compliance": {
+      "type": "object",
+      "properties": {
+        "rule_snapshot_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "evaluated_keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "provider",
+              "campaign_url",
+              "external_campaign_id",
+              "status",
+              "compensation_model",
+              "cpm_or_rate",
+              "minimum_views",
+              "max_payout_per_clip",
+              "total_budget",
+              "remaining_budget",
+              "start_at",
+              "end_at",
+              "deadline_at",
+              "eligible_platforms",
+              "eligible_regions",
+              "eligible_account_requirements",
+              "required_tags",
+              "required_mentions",
+              "required_hashtags",
+              "disclosure_requirements",
+              "source_material_restrictions",
+              "clip_length_min_seconds",
+              "clip_length_max_seconds",
+              "content_restrictions",
+              "editing_restrictions",
+              "uniqueness_rules",
+              "submission_format",
+              "analytics_window",
+              "payout_window",
+              "render_audio_rules",
+              "platform_native_audio_rules",
+              "last_verified_at"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "blocked_unknown_keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "provider",
+              "campaign_url",
+              "external_campaign_id",
+              "status",
+              "compensation_model",
+              "cpm_or_rate",
+              "minimum_views",
+              "max_payout_per_clip",
+              "total_budget",
+              "remaining_budget",
+              "start_at",
+              "end_at",
+              "deadline_at",
+              "eligible_platforms",
+              "eligible_regions",
+              "eligible_account_requirements",
+              "required_tags",
+              "required_mentions",
+              "required_hashtags",
+              "disclosure_requirements",
+              "source_material_restrictions",
+              "clip_length_min_seconds",
+              "clip_length_max_seconds",
+              "content_restrictions",
+              "editing_restrictions",
+              "uniqueness_rules",
+              "submission_format",
+              "analytics_window",
+              "payout_window",
+              "render_audio_rules",
+              "platform_native_audio_rules",
+              "last_verified_at"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "effective_max_clip_seconds": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 600
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effective_min_clip_seconds": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 600
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "rule_snapshot_id",
+        "evaluated_keys",
+        "blocked_unknown_keys",
+        "effective_max_clip_seconds",
+        "effective_min_clip_seconds"
+      ]
+    },
+    "disclosure_render": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "placement": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "CAPTION",
+                "VIDEO",
+                "BOTH",
+                "PROVIDER_SUBMISSION"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "instructions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "minItems": 0,
+          "maxItems": 20
+        },
+        "overlay_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "start_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end_ms": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "start_ms",
+              "end_ms",
+              "text"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 20
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "placement",
+        "text",
+        "instructions",
+        "overlay_events"
+      ]
+    },
+    "restriction_compliance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+              "OWNER_OWNED_SOURCE_ONLY",
+              "NO_THIRD_PARTY_SOURCE",
+              "NO_PROFANITY",
+              "BRAND_SAFE_ONLY",
+              "NO_MISLEADING_CLAIMS",
+              "NO_CROP",
+              "NO_SPEED_CHANGE",
+              "NO_TEXT_OVERLAY",
+              "NO_REUSED_EDIT",
+              "UNIQUE_PER_ACCOUNT",
+              "UNIQUE_PER_CAMPAIGN"
+            ]
+          },
+          "effect": {
+            "type": "string",
+            "enum": [
+              "REQUIRE",
+              "PROHIBIT"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "SOURCE",
+              "CONTENT",
+              "EDIT",
+              "UNIQUENESS"
+            ]
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "COMPLIANT",
+              "VIOLATION",
+              "UNKNOWN"
+            ]
+          },
+          "proof_kind": {
+            "type": "string",
+            "enum": [
+              "RIGHTS_CAMPAIGN_LINK",
+              "SOURCE_ORIGIN",
+              "TRANSCRIPT_LEXICAL_SCAN",
+              "CONTENT_SAFETY_REVIEW",
+              "CLAIMS_EVIDENCE_REVIEW",
+              "EDIT_OPERATION_AUDIT",
+              "CAPTION_OVERLAY_AUDIT",
+              "EDIT_SIGNATURE_COMPARISON",
+              "OWNER_REVIEW",
+              "NONE"
+            ]
+          },
+          "proof_reference": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "proof_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "proof_kind": {
+                    "type": "string",
+                    "enum": [
+                      "RIGHTS_CAMPAIGN_LINK",
+                      "SOURCE_ORIGIN",
+                      "TRANSCRIPT_LEXICAL_SCAN",
+                      "CONTENT_SAFETY_REVIEW",
+                      "CLAIMS_EVIDENCE_REVIEW",
+                      "EDIT_OPERATION_AUDIT",
+                      "CAPTION_OVERLAY_AUDIT",
+                      "EDIT_SIGNATURE_COMPARISON",
+                      "OWNER_REVIEW"
+                    ]
+                  },
+                  "proof_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "target_type": {
+                    "type": "string",
+                    "enum": [
+                      "SOURCE",
+                      "CANDIDATE",
+                      "EDIT_PLAN",
+                      "POSTING_RECOMMENDATION"
+                    ]
+                  },
+                  "target_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "target_version": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "subject_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "evidenced_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "result": {
+                    "const": "COMPLIANT"
+                  },
+                  "restriction_code": {
+                    "type": "string",
+                    "enum": [
+                      "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+                      "OWNER_OWNED_SOURCE_ONLY",
+                      "NO_THIRD_PARTY_SOURCE",
+                      "NO_PROFANITY",
+                      "BRAND_SAFE_ONLY",
+                      "NO_MISLEADING_CLAIMS",
+                      "NO_CROP",
+                      "NO_SPEED_CHANGE",
+                      "NO_TEXT_OVERLAY",
+                      "NO_REUSED_EDIT",
+                      "UNIQUE_PER_ACCOUNT",
+                      "UNIQUE_PER_CAMPAIGN"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "proof_id",
+                  "proof_kind",
+                  "restriction_code",
+                  "proof_sha256",
+                  "target_type",
+                  "target_id",
+                  "subject_sha256",
+                  "evidenced_at",
+                  "result"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "owner_review_resolution_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "effect",
+          "scope",
+          "result",
+          "proof_kind",
+          "proof_reference",
+          "owner_review_resolution_id"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 12,
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_version",
+    "candidate_id",
+    "source_asset_id",
+    "source_sha256",
+    "campaign_rule_snapshot_ids",
+    "source_rights_id",
+    "source_rights_record_hash",
+    "supersedes_edit_plan_id",
+    "plan_fingerprint_sha256",
+    "fingerprint_rule",
+    "timeline",
+    "layout",
+    "captions",
+    "visual_emphasis",
+    "audio_cleanup",
+    "audio_plan_reference",
+    "output",
+    "rule_compliance",
+    "disclosure_render",
+    "restriction_compliance"
+  ],
+  "x-honor-semantic-rules": [
+    "timeline.cuts are ordered by output_start_ms, do not overlap, and source_end_ms > source_start_ms / output_end_ms > output_start_ms",
+    "when word/phoneme timing exists, cut boundaries MUST align to a word or phoneme boundary; FRAME_ONLY_NO_TIMING_DATA is permitted only when timing data is unavailable",
+    "layout/visual/caption events use output timeline milliseconds and must lie inside the final output duration",
+    "plan_fingerprint_sha256 is SHA-256 of RFC8785 canonical JSON with plan_fingerprint_sha256 omitted"
+  ],
+  "description": " V1 commits exactly one campaign rule snapshot; changed terms require a new edit/audio/clip lineage."
+}

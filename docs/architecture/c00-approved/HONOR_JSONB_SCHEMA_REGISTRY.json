@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "registry_version": 1,
+  "structured_frozen_v1": [
+    {
+      "schema_id": "account_health.signals.v1",
+      "file": "jsonschema/account_health.signals.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api|worker"
+    },
+    {
+      "schema_id": "campaign_rule.typed_value.v1",
+      "file": "jsonschema/campaign_rule.typed_value.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api|worker"
+    },
+    {
+      "schema_id": "source_rights.authorized_uses.v1",
+      "file": "jsonschema/source_rights.authorized_uses.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api|worker"
+    },
+    {
+      "schema_id": "source_rights.platform_limits.v1",
+      "file": "jsonschema/source_rights.platform_limits.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api|worker"
+    },
+    {
+      "schema_id": "generation.budget_snapshot.v1",
+      "file": "jsonschema/generation.budget_snapshot.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api"
+    },
+    {
+      "schema_id": "generation.requested_constraints.v1",
+      "file": "jsonschema/generation.requested_constraints.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api"
+    },
+    {
+      "schema_id": "generation.selected_plan.v1",
+      "file": "jsonschema/generation.selected_plan.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api|intelligence"
+    },
+    {
+      "schema_id": "allocation.rationale.v1",
+      "file": "jsonschema/allocation.rationale.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "intelligence"
+    },
+    {
+      "schema_id": "candidate.features.v1",
+      "file": "jsonschema/candidate.features.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "intelligence"
+    },
+    {
+      "schema_id": "edit_plan.v1",
+      "file": "jsonschema/edit_plan.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "media|intelligence"
+    },
+    {
+      "schema_id": "render_manifest.v1",
+      "file": "jsonschema/render_manifest.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "media"
+    },
+    {
+      "schema_id": "audio_asset.allowed_uses.v1",
+      "file": "jsonschema/audio_asset.allowed_uses.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "admin-bootstrap"
+    },
+    {
+      "schema_id": "audio_plan.native_recommendation.v1",
+      "file": "jsonschema/audio_plan.native_recommendation.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "intelligence|media"
+    },
+    {
+      "schema_id": "audio_plan.sfx_events.v1",
+      "file": "jsonschema/audio_plan.sfx_events.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "intelligence|media"
+    },
+    {
+      "schema_id": "audio_plan.ducking.v1",
+      "file": "jsonschema/audio_plan.ducking.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "media"
+    },
+    {
+      "schema_id": "clip.hashtags.v1",
+      "file": "jsonschema/clip.hashtags.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api|intelligence"
+    },
+    {
+      "schema_id": "clip.posting_recommendation.v1",
+      "file": "jsonschema/clip.posting_recommendation.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "intelligence|api"
+    },
+    {
+      "schema_id": "qc.checks.v1",
+      "file": "jsonschema/qc.checks.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "media|worker"
+    },
+    {
+      "schema_id": "qc.metrics.v1",
+      "file": "jsonschema/qc.metrics.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "media|worker"
+    },
+    {
+      "schema_id": "analytics_checkin.config.v1",
+      "file": "jsonschema/analytics_checkin.config.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api|worker"
+    },
+    {
+      "schema_id": "post.native_audio_used.v1",
+      "file": "jsonschema/post.native_audio_used.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api"
+    },
+    {
+      "schema_id": "polli.fact_labels.v1",
+      "file": "jsonschema/polli.fact_labels.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api|polli"
+    },
+    {
+      "schema_id": "polli.tool.arguments.v1",
+      "file": "jsonschema/polli.tool.arguments.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "polli-tool-gateway"
+    },
+    {
+      "schema_id": "polli.tool.result_summary.v1",
+      "file": "jsonschema/polli.tool.result_summary.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "polli-tool-gateway"
+    },
+    {
+      "schema_id": "event.payload.v1",
+      "file": "jsonschema/event.payload.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api|worker|media|intelligence"
+    },
+    {
+      "schema_id": "owner_action.resolution.v1",
+      "file": "jsonschema/owner_action.resolution.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api"
+    },
+    {
+      "schema_id": "api_idempotency.response_body.v1",
+      "file": "jsonschema/api_idempotency.response_body.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "api"
+    },
+    {
+      "schema_id": "audio_plan.rule_compliance.v1",
+      "file": "jsonschema/audio_plan.rule_compliance.v1.json",
+      "class": "STRUCTURED_FROZEN_V1",
+      "writer": "intelligence|media"
+    }
+  ],
+  "opaque_redacted_metadata": [
+    {
+      "schema_id": "provider_usage.raw.v1",
+      "file": "jsonschema/provider_usage.raw.v1.json",
+      "class": "INTENTIONALLY_OPAQUE_REDACTED_METADATA",
+      "writer": "worker|api",
+      "max_container_depth": 2,
+      "max_top_level_properties": 100,
+      "max_nested_properties": 50,
+      "max_array_items": 100,
+      "secret_like_field_names_forbidden": true,
+      "redaction_required": true,
+      "product_logic_may_depend_on_unvalidated_fields": false
+    },
+    {
+      "schema_id": "audit.metadata_redacted.v1",
+      "file": "jsonschema/audit.metadata_redacted.v1.json",
+      "class": "INTENTIONALLY_OPAQUE_REDACTED_METADATA",
+      "writer": "api|worker",
+      "max_container_depth": 2,
+      "max_top_level_properties": 100,
+      "max_nested_properties": 50,
+      "max_array_items": 100,
+      "secret_like_field_names_forbidden": true,
+      "redaction_required": true,
+      "product_logic_may_depend_on_unvalidated_fields": false
+    }
+  ],
+  "columns": {
+    "account_health_snapshots.signals": "account_health.signals.v1",
+    "campaign_rule_items.typed_value": "campaign_rule.typed_value.v1",
+    "source_rights.authorized_uses": "source_rights.authorized_uses.v1",
+    "source_rights.platform_limits": "source_rights.platform_limits.v1",
+    "generation_runs.budget_snapshot": "generation.budget_snapshot.v1",
+    "generation_runs.requested_constraints": "generation.requested_constraints.v1",
+    "generation_runs.selected_plan": "generation.selected_plan.v1",
+    "run_campaign_allocations.rationale_json": "allocation.rationale.v1",
+    "candidates.features": "candidate.features.v1",
+    "edit_plans.plan_json": "edit_plan.v1",
+    "audio_assets.allowed_uses": "audio_asset.allowed_uses.v1",
+    "audio_plans.platform_native_recommendation": "audio_plan.native_recommendation.v1",
+    "audio_plans.sfx_events": "audio_plan.sfx_events.v1",
+    "audio_plans.ducking_config": "audio_plan.ducking.v1",
+    "clips.hashtags": "clip.hashtags.v1",
+    "clips.posting_recommendation": "clip.posting_recommendation.v1",
+    "qc_runs.checks": "qc.checks.v1",
+    "qc_runs.metrics": "qc.metrics.v1",
+    "posts.native_audio_used": "post.native_audio_used.v1",
+    "analytics_checkins.config_snapshot": "analytics_checkin.config.v1",
+    "provider_usage.raw_usage": "provider_usage.raw.v1",
+    "polli_turns.fact_labels": "polli.fact_labels.v1",
+    "polli_tool_calls.arguments_json": "polli.tool.arguments.v1",
+    "polli_tool_calls.result_summary_json": "polli.tool.result_summary.v1",
+    "owner_actions.resolution": "owner_action.resolution.v1",
+    "events.payload": "event.payload.v1",
+    "audit_log.metadata_redacted": "audit.metadata_redacted.v1",
+    "api_idempotency_records.response_body": "api_idempotency.response_body.v1",
+    "render_manifests.manifest_json": "render_manifest.v1",
+    "audio_plans.rule_compliance": "audio_plan.rule_compliance.v1"
+  }
+}

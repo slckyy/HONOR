@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/audio_plan.native_recommendation.v1.json",
+  "title": "audio_plan.native_recommendation.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "x-honor-writer": "intelligence|media",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "recommendation_status": {
+      "type": "string",
+      "enum": [
+        "RECOMMENDED",
+        "PROHIBITED",
+        "UNKNOWN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "recommendation_type": {
+      "type": "string",
+      "enum": [
+        "NATIVE_AUDIO_SEARCH",
+        "TREND_STYLE_ONLY",
+        "NONE"
+      ]
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "TIKTOK",
+        "INSTAGRAM_REELS",
+        "YOUTUBE_SHORTS"
+      ]
+    },
+    "search_terms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      },
+      "minItems": 0,
+      "maxItems": 10,
+      "uniqueItems": true
+    },
+    "identifiable_guidance": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1500
+    },
+    "cue_guidance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "start_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "instruction": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "start_ms",
+          "end_ms",
+          "instruction"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 20
+    },
+    "campaign_compatibility": {
+      "type": "string",
+      "enum": [
+        "ALLOWED",
+        "PROHIBITED",
+        "UNKNOWN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "rule_snapshot_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "not_baked_into_rendered_mp4": {
+      "const": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "recommendation_status",
+    "recommendation_type",
+    "platform",
+    "search_terms",
+    "identifiable_guidance",
+    "reason",
+    "cue_guidance",
+    "campaign_compatibility",
+    "rule_snapshot_id",
+    "not_baked_into_rendered_mp4"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "recommendation_status": {
+            "const": "RECOMMENDED"
+          }
+        },
+        "required": [
+          "recommendation_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "campaign_compatibility": {
+            "const": "ALLOWED"
+          },
+          "recommendation_type": {
+            "enum": [
+              "NATIVE_AUDIO_SEARCH",
+              "TREND_STYLE_ONLY"
+            ]
+          }
+        },
+        "anyOf": [
+          {
+            "properties": {
+              "search_terms": {
+                "minItems": 1
+              }
+            }
+          },
+          {
+            "properties": {
+              "identifiable_guidance": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recommendation_status": {
+            "const": "PROHIBITED"
+          }
+        },
+        "required": [
+          "recommendation_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "campaign_compatibility": {
+            "const": "PROHIBITED"
+          },
+          "recommendation_type": {
+            "const": "NONE"
+          },
+          "search_terms": {
+            "maxItems": 0
+          },
+          "identifiable_guidance": {
+            "type": "null"
+          },
+          "cue_guidance": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recommendation_status": {
+            "const": "UNKNOWN"
+          }
+        },
+        "required": [
+          "recommendation_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "campaign_compatibility": {
+            "const": "UNKNOWN"
+          },
+          "recommendation_type": {
+            "const": "NONE"
+          },
+          "search_terms": {
+            "maxItems": 0
+          },
+          "identifiable_guidance": {
+            "type": "null"
+          },
+          "cue_guidance": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recommendation_status": {
+            "const": "NOT_APPLICABLE"
+          }
+        },
+        "required": [
+          "recommendation_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "campaign_compatibility": {
+            "const": "NOT_APPLICABLE"
+          },
+          "recommendation_type": {
+            "const": "NONE"
+          },
+          "search_terms": {
+            "maxItems": 0
+          },
+          "identifiable_guidance": {
+            "type": "null"
+          },
+          "cue_guidance": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ],
+  "description": "Platform-native audio guidance only. Campaign rules override recommendations. This audio is never baked into the rendered MP4."
+}

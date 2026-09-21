@@ -1,0 +1,558 @@
+{
+  "schema_version": 1,
+  "authority": "HONOR_OPENAPI_V1.json x-honor-error-codes-by-status",
+  "operations": {
+    "GET /readyz": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ]
+    },
+    "POST /v1/generation-runs": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "COST_GOVERNOR_BLOCKED",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "IDEMPOTENCY_KEY_REUSED"
+      ]
+    },
+    "GET /v1/generation-runs/{id}": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "VALIDATION_ERROR"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "404": [
+        "NOT_FOUND"
+      ]
+    },
+    "GET /v1/campaigns": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "VALIDATION_ERROR"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ]
+    },
+    "POST /v1/campaigns/import": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "COST_GOVERNOR_BLOCKED",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "CONFLICT",
+        "IDEMPOTENCY_KEY_REUSED"
+      ]
+    },
+    "GET /v1/campaigns/{id}": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "VALIDATION_ERROR"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "404": [
+        "NOT_FOUND"
+      ]
+    },
+    "POST /v1/uploads/intents": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "CONFLICT",
+        "IDEMPOTENCY_KEY_REUSED"
+      ]
+    },
+    "POST /v1/uploads/{id}/complete": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "UPLOAD_MISMATCH",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "404": [
+        "UPLOAD_NOT_FOUND"
+      ],
+      "409": [
+        "IDEMPOTENCY_KEY_REUSED",
+        "UPLOAD_EXPIRED",
+        "UPLOAD_MISMATCH"
+      ]
+    },
+    "POST /v1/sources/import": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN",
+        "RIGHTS_UNVERIFIED"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "RIGHTS_UNVERIFIED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "CONFLICT",
+        "IDEMPOTENCY_KEY_REUSED"
+      ]
+    },
+    "GET /v1/sources/{id}": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "VALIDATION_ERROR"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "404": [
+        "NOT_FOUND"
+      ]
+    },
+    "GET /v1/clips": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "VALIDATION_ERROR"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ]
+    },
+    "GET /v1/clips/{id}": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "VALIDATION_ERROR"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "404": [
+        "NOT_FOUND"
+      ]
+    },
+    "GET /v1/schedule/tomorrow": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ]
+    },
+    "POST /v1/posts": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "CONFLICT",
+        "IDEMPOTENCY_KEY_REUSED",
+        "INVALID_STATE_TRANSITION"
+      ]
+    },
+    "POST /v1/submissions": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "CONFLICT",
+        "IDEMPOTENCY_KEY_REUSED",
+        "INVALID_STATE_TRANSITION"
+      ]
+    },
+    "POST /v1/analytics/check-ins": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "CONFLICT",
+        "IDEMPOTENCY_KEY_REUSED",
+        "INVALID_STATE_TRANSITION"
+      ]
+    },
+    "GET /v1/analytics/due": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "VALIDATION_ERROR"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ]
+    },
+    "POST /v1/payout-events": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "CONFLICT",
+        "EARNING_ALREADY_EXISTS",
+        "IDEMPOTENCY_KEY_REUSED",
+        "INVALID_STATE_TRANSITION"
+      ]
+    },
+    "GET /v1/finance/summary": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "VALIDATION_ERROR"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ]
+    },
+    "GET /v1/costs/summary": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ]
+    },
+    "POST /v1/polli/sessions": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "COST_GOVERNOR_BLOCKED",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "IDEMPOTENCY_KEY_REUSED"
+      ]
+    },
+    "POST /v1/polli/live/sessions": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "COST_GOVERNOR_BLOCKED",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "IDEMPOTENCY_KEY_REUSED",
+        "SESSION_NOT_ACTIVE"
+      ]
+    },
+    "POST /v1/polli/query": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "COST_GOVERNOR_BLOCKED",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "409": [
+        "IDEMPOTENCY_KEY_REUSED",
+        "SESSION_NOT_ACTIVE"
+      ]
+    },
+    "POST /v1/polli/sessions/{id}/end": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "404": [
+        "NOT_FOUND"
+      ],
+      "409": [
+        "IDEMPOTENCY_KEY_REUSED",
+        "SESSION_NOT_ACTIVE"
+      ]
+    },
+    "GET /v1/owner-actions": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "VALIDATION_ERROR"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ]
+    },
+    "POST /v1/owner-actions/{id}/resolve": {
+      "401": [
+        "AUTH_INVALID",
+        "AUTH_REQUIRED"
+      ],
+      "403": [
+        "OWNER_FORBIDDEN"
+      ],
+      "422": [
+        "IDEMPOTENCY_KEY_REQUIRED",
+        "VALIDATION_ERROR"
+      ],
+      "429": [
+        "RATE_LIMITED"
+      ],
+      "503": [
+        "AUTH_PROVIDER_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE"
+      ],
+      "404": [
+        "NOT_FOUND"
+      ],
+      "409": [
+        "IDEMPOTENCY_KEY_REUSED",
+        "INVALID_STATE_TRANSITION"
+      ]
+    }
+  }
+}

@@ -1,0 +1,4 @@
+import test from 'node:test'; import assert from 'node:assert/strict'; import fs from 'node:fs'; import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..');
+test('no stale auth callback route',()=>{assert.equal(fs.existsSync(path.join(root,'app/auth/callback')),false)});
+test('browser files do not reference server secret env names',()=>{const files=[];const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);if(e.isDirectory())walk(p);else if(/\.(ts|tsx|js)$/.test(e.name))files.push(p)}};walk(path.join(root,'app'));walk(path.join(root,'components'));for(const f of files){const s=fs.readFileSync(f,'utf8');assert.equal(/process\.env\.(DATABASE_|REDIS_PASSWORD|R2_.*SECRET|OPENAI_API_KEY|RESTIC_PASSWORD)/.test(s),false,`secret env in ${f}`)}});

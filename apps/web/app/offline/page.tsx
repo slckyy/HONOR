@@ -1,0 +1,1 @@
+export default function Offline(){return <section className="card hero"><p className="eyebrow">Offline</p><h1>HONOR is offline.</h1><p className="muted">Reconnect to continue authenticated work. No business mutations are queued in the browser.</p></section>}

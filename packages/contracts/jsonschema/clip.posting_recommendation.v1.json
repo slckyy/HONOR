@@ -1,0 +1,602 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/clip.posting_recommendation.v1.json",
+  "title": "clip.posting_recommendation.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "x-honor-writer": "intelligence|api",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "TIKTOK",
+        "INSTAGRAM_REELS",
+        "YOUTUBE_SHORTS"
+      ]
+    },
+    "social_account_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "social_identity_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "recommended_publish_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "caption": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "platform_title": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 500
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "hashtags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^#[^\\s#]{1,99}$"
+      },
+      "minItems": 0,
+      "maxItems": 30,
+      "uniqueItems": true
+    },
+    "required_mentions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "mention_type": {
+            "type": "string",
+            "enum": [
+              "ACCOUNT",
+              "PERSON",
+              "BRAND",
+              "CAMPAIGN"
+            ]
+          },
+          "instruction": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "handle",
+          "mention_type",
+          "instruction"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 30
+    },
+    "disclosure": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "instructions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "minItems": 0,
+          "maxItems": 20
+        },
+        "placement": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "CAPTION",
+                "VIDEO",
+                "BOTH",
+                "PROVIDER_SUBMISSION"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "text",
+        "instructions",
+        "placement"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "required": {
+                "const": true
+              }
+            },
+            "required": [
+              "required"
+            ]
+          },
+          "then": {
+            "anyOf": [
+              {
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "instructions": {
+                    "minItems": 1
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "placement": {
+                "type": "string",
+                "enum": [
+                  "CAPTION",
+                  "VIDEO",
+                  "BOTH",
+                  "PROVIDER_SUBMISSION"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "submission_requirements": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "instructions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1500
+          },
+          "minItems": 0,
+          "maxItems": 30
+        },
+        "submission_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "required_evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "POST_URL",
+              "PLATFORM_POST_ID",
+              "SCREENSHOT",
+              "ANALYTICS_SNAPSHOT",
+              "OTHER"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 5,
+          "uniqueItems": true
+        },
+        "deadline_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provider_disclosure": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "text": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "instructions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "minItems": 0,
+              "maxItems": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "required",
+            "text",
+            "instructions"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "instructions",
+        "submission_url",
+        "required_evidence",
+        "deadline_at",
+        "provider_disclosure"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "required": {
+                "const": true
+              }
+            },
+            "required": [
+              "required"
+            ]
+          },
+          "then": {
+            "properties": {
+              "instructions": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "native_audio_recommendation": {
+      "$ref": "audio_plan.native_recommendation.v1.json"
+    },
+    "required_tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "minItems": 0,
+      "maxItems": 30,
+      "uniqueItems": true
+    },
+    "source_attribution": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "instructions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "minItems": 0,
+          "maxItems": 10
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "text",
+        "instructions"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "required": {
+                "const": true
+              }
+            },
+            "required": [
+              "required"
+            ]
+          },
+          "then": {
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "posting_restriction_compliance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+              "OWNER_OWNED_SOURCE_ONLY",
+              "NO_THIRD_PARTY_SOURCE",
+              "NO_PROFANITY",
+              "BRAND_SAFE_ONLY",
+              "NO_MISLEADING_CLAIMS",
+              "NO_CROP",
+              "NO_SPEED_CHANGE",
+              "NO_TEXT_OVERLAY",
+              "NO_REUSED_EDIT",
+              "UNIQUE_PER_ACCOUNT",
+              "UNIQUE_PER_CAMPAIGN"
+            ]
+          },
+          "effect": {
+            "type": "string",
+            "enum": [
+              "REQUIRE",
+              "PROHIBIT"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "SOURCE",
+              "CONTENT",
+              "EDIT",
+              "UNIQUENESS"
+            ]
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "COMPLIANT",
+              "VIOLATION",
+              "UNKNOWN"
+            ]
+          },
+          "proof_kind": {
+            "type": "string",
+            "enum": [
+              "RIGHTS_CAMPAIGN_LINK",
+              "SOURCE_ORIGIN",
+              "TRANSCRIPT_LEXICAL_SCAN",
+              "CONTENT_SAFETY_REVIEW",
+              "CLAIMS_EVIDENCE_REVIEW",
+              "EDIT_OPERATION_AUDIT",
+              "CAPTION_OVERLAY_AUDIT",
+              "EDIT_SIGNATURE_COMPARISON",
+              "OWNER_REVIEW",
+              "NONE"
+            ]
+          },
+          "proof_reference": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "proof_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "proof_kind": {
+                    "type": "string",
+                    "enum": [
+                      "RIGHTS_CAMPAIGN_LINK",
+                      "SOURCE_ORIGIN",
+                      "TRANSCRIPT_LEXICAL_SCAN",
+                      "CONTENT_SAFETY_REVIEW",
+                      "CLAIMS_EVIDENCE_REVIEW",
+                      "EDIT_OPERATION_AUDIT",
+                      "CAPTION_OVERLAY_AUDIT",
+                      "EDIT_SIGNATURE_COMPARISON",
+                      "OWNER_REVIEW"
+                    ]
+                  },
+                  "proof_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "target_type": {
+                    "type": "string",
+                    "enum": [
+                      "SOURCE",
+                      "CANDIDATE",
+                      "EDIT_PLAN",
+                      "POSTING_RECOMMENDATION"
+                    ]
+                  },
+                  "target_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "target_version": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "subject_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "evidenced_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "result": {
+                    "const": "COMPLIANT"
+                  },
+                  "restriction_code": {
+                    "type": "string",
+                    "enum": [
+                      "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+                      "OWNER_OWNED_SOURCE_ONLY",
+                      "NO_THIRD_PARTY_SOURCE",
+                      "NO_PROFANITY",
+                      "BRAND_SAFE_ONLY",
+                      "NO_MISLEADING_CLAIMS",
+                      "NO_CROP",
+                      "NO_SPEED_CHANGE",
+                      "NO_TEXT_OVERLAY",
+                      "NO_REUSED_EDIT",
+                      "UNIQUE_PER_ACCOUNT",
+                      "UNIQUE_PER_CAMPAIGN"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "proof_id",
+                  "proof_kind",
+                  "restriction_code",
+                  "proof_sha256",
+                  "target_type",
+                  "target_id",
+                  "subject_sha256",
+                  "evidenced_at",
+                  "result"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "owner_review_resolution_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "effect",
+          "scope",
+          "result",
+          "proof_kind",
+          "proof_reference",
+          "owner_review_resolution_id"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "description": "For every material posting_recommendation version, exactly one COMPLIANT record is required for each active posting-consuming restriction and no extras. Round-11 V1 uses fresh-version binding: even if caption/title hash is unchanged, proof artifact recommendation_version must equal the new DB-authored version."
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "platform",
+    "social_account_id",
+    "social_identity_id",
+    "recommended_publish_at",
+    "caption",
+    "platform_title",
+    "hashtags",
+    "required_mentions",
+    "disclosure",
+    "submission_requirements",
+    "native_audio_recommendation",
+    "required_tags",
+    "source_attribution",
+    "posting_restriction_compliance"
+  ],
+  "description": "Exact manual-posting instruction snapshot. Campaign rules and source-rights attribution/platform/duration restrictions override every recommendation. Required source attribution is explicit and must also be included in owner-copy caption text."
+}

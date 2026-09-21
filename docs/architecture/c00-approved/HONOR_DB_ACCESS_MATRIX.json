@@ -1,0 +1,356 @@
+{
+  "schema_version": 1,
+  "runtime_role": {
+    "name": "honor_app",
+    "login": true,
+    "superuser": false,
+    "createdb": false,
+    "createrole": false,
+    "inherit": false,
+    "bypassrls": false,
+    "owns_application_tables": false,
+    "used_by": [
+      "api",
+      "worker"
+    ]
+  },
+  "owner_scope": {
+    "transaction_setting": "honor.owner_user_id",
+    "source": "FastAPI validated JWT sub; worker uses server-only HONOR_OWNER_USER_ID",
+    "owner_profiles_policy": "owner_profiles.user_id::text = current_setting('honor.owner_user_id', true) AND active=true",
+    "other_table_policy": "honor_owner_authorized() where helper SELECTs owner_profiles under the direct owner_profiles policy",
+    "rls_enabled": true,
+    "rls_forced": true,
+    "single_owner_v1": true,
+    "multi_owner_requires_change_request": true,
+    "transaction_local": true,
+    "set_sql": "SELECT set_config('honor.owner_user_id', $1, true)",
+    "equivalent": "SET LOCAL honor.owner_user_id = '<validated-owner-uuid>'",
+    "session_global_set_forbidden": true,
+    "transaction_sequence": [
+      "BEGIN",
+      "set_config(..., true) using validated owner UUID",
+      "authorized statements",
+      "COMMIT or ROLLBACK",
+      "owner context disappears before pooled connection reuse"
+    ],
+    "reused_connection_test": {
+      "transaction_a": "set owner UUID transaction-locally and verify authorized SELECT succeeds",
+      "after_commit": "current_setting('honor.owner_user_id', true) is NULL or empty",
+      "transaction_b_before_set": "authorization helper returns false; no owner row is visible",
+      "result": "PASS only if identity from transaction A is absent"
+    }
+  },
+  "admin_connection": {
+    "env": "DATABASE_ADMIN_URL",
+    "uses": [
+      "migrations",
+      "pg_dump",
+      "restore",
+      "role_grant_policy_maintenance",
+      "audited_admin_repair"
+    ]
+  },
+  "runtime_connection": {
+    "env": "DATABASE_APP_URL"
+  },
+  "classes": {
+    "A_MUTABLE_RUNTIME": {
+      "permissions": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "delete": false,
+      "tables": [
+        "social_identities",
+        "social_accounts",
+        "campaigns",
+        "uploads",
+        "sources",
+        "transcripts",
+        "generation_runs",
+        "clips",
+        "posts",
+        "submissions",
+        "analytics_checkins",
+        "polli_sessions",
+        "owner_actions",
+        "jobs",
+        "api_idempotency_records",
+        "experiments",
+        "experiment_arms",
+        "experiment_assignments"
+      ]
+    },
+    "B_APPEND_ONLY_RUNTIME": {
+      "permissions": [
+        "SELECT",
+        "INSERT"
+      ],
+      "delete": false,
+      "immutable_after_insert": true,
+      "tables": [
+        "account_health_snapshots",
+        "campaign_terms_snapshots",
+        "qc_runs",
+        "analytics_observations",
+        "provider_usage",
+        "polli_turns",
+        "polli_tool_calls",
+        "events",
+        "audit_log",
+        "edit_plans",
+        "audio_plans",
+        "render_manifests",
+        "campaign_rule_items",
+        "run_campaign_allocations",
+        "candidates",
+        "restriction_proof_artifacts"
+      ],
+      "terminal_insert_rules": {
+        "qc_runs": "insert only after a QC attempt reaches terminal success/failure; finished_at and passed are non-null; retry creates a new row",
+        "render_manifests": "insert only after a successful immutable QC result; one accepted terminal manifest per clip"
+      },
+      "special_insert_rules": {
+        "campaign_rule_items": "immutable normalized facts scoped to campaign_terms_snapshots.id; no UPDATE/DELETE",
+        "run_campaign_allocations": "immutable committed decision evidence with exact rule/rights/account-health/run/as-of/version inputs",
+        "candidates": "committed candidate identity/scoring/transcript lineage is insert-only"
+      }
+    },
+    "C_ADMIN_MAINTAINED": {
+      "permissions": [
+        "SELECT"
+      ],
+      "delete": false,
+      "runtime_mutation": false,
+      "tables": [
+        "owner_profiles",
+        "audio_assets",
+        "backup_runs"
+      ],
+      "audio_assets_admin_rule": "audio_assets material identity/provenance/allowed-use fields are immutable after INSERT. Admin may only revoke future use via one-way active TRUE->FALSE; DELETE and false->true reactivation are forbidden. Changed binary/license/rights requires a new asset id/version."
+    },
+    "D_COST_LEDGER_CONSTRAINED": {
+      "permissions": [
+        "SELECT",
+        "INSERT",
+        "UPDATE_RECONCILIATION_FIELDS_ONLY"
+      ],
+      "delete": false,
+      "tables": [
+        "cost_ledger"
+      ],
+      "update_rule": "Only actual_cost_usd/reconciled_at may change, only NULL->non-NULL once, in one transaction that inserts an audit_log row; all other UPDATE and every DELETE are rejected by trigger."
+    },
+    "E_FUNCTION_COMMITTED_RIGHTS": {
+      "permissions": [
+        "SELECT"
+      ],
+      "delete": false,
+      "direct_runtime_insert": false,
+      "tables": [
+        "source_rights",
+        "source_rights_campaigns"
+      ],
+      "mutation_path": "honor_commit_source_rights_version(...) only; inserts a new rights row and complete campaign applicability set atomically; no later association to an existing rights version"
+    },
+    "F_EARNINGS_CONSTRAINED": {
+      "permissions": [
+        "SELECT",
+        "INSERT",
+        "STATE_UPDATE_VIA_FUNCTION_ONLY"
+      ],
+      "delete": false,
+      "tables": [
+        "earnings"
+      ],
+      "update_rule": "Direct honor_app UPDATE is revoked. honor_transition_earning(...) locks the row, validates the frozen graph, inserts earning_state_transitions with exact from_state/to_state/amount snapshot, then updates state/last_state_at atomically."
+    },
+    "G_FUNCTION_COMMITTED_EARNING_TRANSITIONS": {
+      "permissions": [
+        "SELECT"
+      ],
+      "delete": false,
+      "direct_runtime_insert": false,
+      "tables": [
+        "earning_state_transitions"
+      ],
+      "mutation_path": "honor_transition_earning(...) only; inserts immutable transition and updates earnings.state/last_state_at atomically in the same transaction"
+    },
+    "H_FUNCTION_COMMITTED_RULE_SEALS": {
+      "description": "Immutable rule-set seal records. honor_app may SELECT; INSERT only through owner-authorized seal function; no UPDATE/DELETE.",
+      "tables": [
+        "campaign_rule_set_commits"
+      ],
+      "select": true,
+      "insert": false,
+      "update": false,
+      "delete": false
+    },
+    "I_ACCEPTED_SIGNATURE_RESERVATIONS": {
+      "tables": [
+        "accepted_edit_signatures"
+      ],
+      "runtime": "INSERT only through clip READY acceptance trigger; SELECT allowed; UPDATE/DELETE forbidden",
+      "purpose": "race-safe final uniqueness invariant",
+      "permissions": [
+        "SELECT"
+      ],
+      "select": true,
+      "insert": false,
+      "update": false,
+      "delete": false,
+      "direct_runtime_insert": false,
+      "mutation_path": "honor_final_uniqueness_acceptance_guard() only via clip READY transition"
+    }
+  },
+  "browser_roles": {
+    "anon_business_dml": false,
+    "authenticated_business_dml": false,
+    "service_role_runtime_used": false
+  },
+  "special_rules": {
+    "cost_ledger": "Insert is permanent. Only one-time NULL->value reconciliation of actual_cost_usd/reconciled_at is permitted, and it MUST insert audit_log in the same transaction; all other UPDATE/DELETE denied.",
+    "earnings": "Initial ACCRUED_UNVERIFIED insertion is direct runtime INSERT; direct runtime UPDATE is revoked. Every state change uses honor_transition_earning(...) to lock the row, validate the graph, insert the immutable transition with exact pre-state/to-state/amount snapshot, and update state/last_state_at atomically.",
+    "delete_policy": "No runtime DELETE grant or RLS DELETE policy on any HONOR table",
+    "source_rights": "Immutable/versioned and runtime SELECT-only. New evidence, revocation, or applicability requires a new contiguous source_rights version created through honor_commit_source_rights_version(...); historical rows never UPDATE/DELETE.",
+    "source_rights_campaigns": "Immutable relationship history and runtime SELECT-only. The complete applicability set is inserted only inside honor_commit_source_rights_version(...) with the new rights version; later attachment to an existing rights version is impossible for honor_app.",
+    "edit_plans": "insert-only committed plans; revisions create incremented plan_version with supersedes_edit_plan_id",
+    "audio_plans": "insert-only committed plans; revisions create incremented plan_version with supersedes_audio_plan_id",
+    "qc_runs": "terminal-at-insert, finished_at/passed required, append-only; each retry is a new row",
+    "render_manifests": "terminal immutable record inserted only when honor_render_manifest_guard verifies passed terminal QC and clip-matching edit/audio plan; one per clip",
+    "ready_gate": "clip may enter READY only when honor_clip_ready_guard finds a render_manifest linked to passed qc_run matching the clip edit/audio plan references",
+    "source_rights_version_chain": "rights v1 has no predecessor; N>1 must supersede exactly N-1 for the same source_id; UNIQUE(supersedes_rights_id) prevents forks",
+    "edit_plan_version_chain": "plan v1 has no predecessor; N>1 must supersede exactly N-1 for the same candidate_id; UNIQUE(supersedes_edit_plan_id) prevents forks",
+    "audio_plan_version_chain": "plan v1 has no predecessor; N>1 must supersede exactly N-1 for the same edit_plan_id; UNIQUE(supersedes_audio_plan_id) prevents forks",
+    "clip_cross_record_integrity": "composite FKs + honor_clip_cross_record_guard enforce rights/source/campaign, rule/campaign, candidate/source/run, edit-plan JSON provenance, audio/edit-plan, posting account/identity, and native-audio rule snapshot consistency",
+    "clip_provenance_lock": "after accepted render_manifest exists or clip state is READY/POSTED/ARCHIVED, generation/campaign/source/account/edit/audio/rule/rights/output identity fields are immutable; corrections create new lineage",
+    "posting_snapshot": "posting_recommendation is canonical; caption_copy/title_copy/hashtags are atomically derived mirrors; recommendation locks at POSTED/ARCHIVED or first posts row",
+    "rights_expiration": "source_rights.expires_at is sole authority; expired at T iff expires_at non-null and T >= expires_at; no duplicate expiration in authorized_uses",
+    "campaign_terms_lineage": "campaigns current snapshot and campaign_rule_items evidence snapshot use composite same-campaign foreign keys",
+    "post_lineage": "post account equals clip account; platform equals social account and posting recommendation; native_audio_used platform equals post; INSERT requires READY and atomically advances clip to POSTED",
+    "submission_lineage": "submission campaign equals campaign of post.clip",
+    "analytics_checkin_lineage": "nullable observation checkin_id uses composite (checkin_id,post_id) FK to same post",
+    "earning_lineage": "earning optional post campaign and evidence snapshot campaign must equal earning campaign",
+    "earning_transition_atomicity": "Direct earnings UPDATE and direct earning_state_transitions INSERT are revoked; honor_transition_earning(...) locks the earning, validates the frozen state graph, inserts the immutable transition with exact pre-state/to-state/amount snapshot, and updates earnings.state/last_state_at in one transaction. Any failure rolls the transaction back.",
+    "source_rights_campaign_commit": "complete campaign applicability is inserted only with a new rights version through honor_commit_source_rights_version; historical rights cannot receive later runtime associations",
+    "authorized_use_matrix": "HONOR_RIGHTS_STAGE_MATRIX.json + honor_rights_stage_allowed define required flags; UNKNOWN/false never grants; campaign clips additionally require commercial_use and derivative_edits",
+    "recommended_publish_time": "non-null recommendation must be before rights expires_at/end/deadline, not before start, and timing rules for frozen snapshot cannot be UNKNOWN/absent",
+    "native_audio_authority": "committed audio plan recommendation is planning authority and posting recommendation is exact mirror; RECOMMENDED requires audio plan; prohibited/unknown rule states cannot escalate",
+    "campaign_rule_snapshots": "campaign_terms_snapshots.id identifies immutable normalized evidence/rule snapshots; campaign_rule_items are append-only before seal and append-closed after campaign_rule_set_commits; current campaign mirrors advance only through honor_activate_campaign_rule_snapshot() on a newer sealed snapshot.",
+    "campaign_truth_model": "KNOWN requires typed value/evidence/verified_at; NOT_APPLICABLE requires null value/evidence/verified_at; UNKNOWN requires null typed value",
+    "campaign_rule_registry": "HONOR_CAMPAIGN_RULE_REGISTRY.json exactly defines 32 keys and per-key typed schemas/consumers; UNKNOWN critical rules block relevant stage",
+    "account_eligibility": "account_health_snapshots region/follower_count/posting_available are nullable facts; missing required fact => UNKNOWN/BLOCKED, never guessed",
+    "rights_action_time": "honor_current_rights_for_action() selects latest source rights version available at T before checking campaign/stage; no fallback to older rights after a newer narrowing/revocation.",
+    "transcript_candidate_lineage": "candidate pins SUCCEEDED same-source transcript_id; candidate insert-only; transcript retry creates new version row",
+    "generation_decision_history": "run creation inputs immutable; selected_plan write-once; allocations insert-only with exact rule/rights/account snapshot/as-of/version inputs",
+    "lifecycle_guards": "creation/transition guards enforce earnings/posts/checkins/submissions/clips/sources/jobs/generation_runs state contracts independent of caller-supplied enum values",
+    "experiment_tracking": "minimal experiments/arms/assignments; assignment identity immutable, exposed_at one-time; causal claims require experiment evidence",
+    "analytics_learning_fields": "watch_time_ms=total cumulative; average_watch_duration_ms/completed_views/completion_rate_ppm/follower_delta nullable UNKNOWN when unavailable",
+    "rights_attribution_duration": "required_attribution must be explicit in posting snapshot+caption; effective duration obeys most restrictive known campaign and rights max; UNKNOWN critical restriction blocks media/READY",
+    "native_audio_platform": "posting nested native recommendation platform, posting platform, account platform, and committed audio-plan native platform are identical",
+    "campaign_rule_history": "campaign_rule_items are insert-only and snapshot-scoped by terms_snapshot_id; activation requires exactly 32 canonical keys and updates current campaign mirrors atomically. Historical decisions pin rule_snapshot_id.",
+    "campaign_scalar_mirrors": "provider/campaign_url/external_campaign_id/status/start_at/end_at/deadline_at/last_verified_at are current mirrors and are not direct runtime UPDATE columns; honor_activate_campaign_rule_snapshot() is the mutation path.",
+    "transcript_lineage": "paid transcript rows pin campaign_id+rights_id and are authorized at created_at; terminal attempts are immutable once consumed and retry creates contiguous new transcript version.",
+    "candidate_history": "candidates are append-only and pin exact successful transcript_id plus scoring/features/version; old scoring is never rewritten.",
+    "allocation_history": "run_campaign_allocations are append-only and pin exact rule snapshot, rights version, account-health snapshot, decision time and model/rules versions.",
+    "experiment_history": "minimal experiment assignments pin arm+unit+time; identity is immutable and exposed assignment cannot change; experiment lifecycle is guarded.",
+    "campaign_cross_rule_invariants": "honor_activate_campaign_rule_snapshot rejects KNOWN min/max clip inversion, start/end inversion, remaining_budget > total_budget, and min_followers > max_followers.",
+    "audio_plan_current_rights": "honor_audio_plan_version_guard revalidates the edit plan pinned rights against the latest rights as of audio-plan committed_at and blocks UNKNOWN render/native-audio rules.",
+    "future_posting_recommendation": "Owner-facing schedule/recommendation queries revalidate the stored clip rights against the latest PUBLICATION_RECOMMENDATION rights at response time; obsolete broader rights are never fallback authorization.",
+    "campaign_rule_set_seals": "campaign_rule_set_commits is runtime SELECT-only; owner-authorized SECURITY DEFINER honor_seal_campaign_rule_set(...) is the sole runtime insert path; seal rows are immutable and close the underlying campaign_rule_items tuple to later inserts.",
+    "internal_action_time": "Internal authorization timestamps are overwritten by DB statement time on protected insert/transition paths; external factual capture/published/observed times remain factual inputs.",
+    "experiment_predeclaration": "Experiment design may mutate only while remaining DRAFT; DRAFT->RUNNING requires >=2 arms exactly one control; no arm mutation afterward; assignments only RUNNING with exact experiment unit_type and DB-authored assignment/exposure times.",
+    "round9_qc_truth": "qc_runs.passed is derived by honor_qc_truth_guard from HONOR_QC_POLICY; caller hard_gate cannot downgrade canonical policy.",
+    "round9_recommendation_revision": "material pre-post recommendation revisions are DB-timestamped/versioned and reauthorize current publication rights/current sealed campaign rule snapshot.",
+    "round9_experiment_serialization": "arm and assignment mutation lock parent experiment row FOR UPDATE before status checks.",
+    "restriction_proof_lineage": "restriction_proof_artifacts is append-only immutable evidence; edit/post restriction compliance must resolve to a matching proof row. OWNER_REVIEW additionally requires a matching RESOLVED owner_actions record.",
+    "restriction_rule_key_placement": "Seal rejects any restriction code outside its canonical source/content/editing/uniqueness rule key and rejects duplicate semantic codes.",
+    "null_audio_plan_render": "clip.audio_plan_id NULL requires null manifest audio identity and empty render_safe_assets; render-audio QC N/A is permitted only for NOT_APPLICABLE render_audio_rules.",
+    "experiment_arm_identity": "experiment_arms.id/experiment_id/created_at immutable; UPDATE/DELETE serialize against OLD parent experiment row.",
+    "audio_assets": "Runtime role is SELECT-only. Immutable asset versions freeze storage key, SHA-256, kind, license identity/reference/evidence hash, provenance, render_safe, attribution requirement and allowed_uses. active may transition TRUE->FALSE only. Exact V1 automatic eligibility is checked at audio-plan commit, render start and render-manifest admission.",
+    "owner_actions": "Creation is OPEN only with DB-authored requested_at/created_at. OPEN may transition once to RESOLVED or CANCELLED with DB-authored terminal time and canonical resolution hash. Terminal actions are immutable and cannot reopen. Restriction-compliance OWNER_REVIEW is PRECOMMIT: resolution may bind a reserved future target UUID but must match exact campaign/sealed-rule/candidate/restriction/target_type/target_version/subject hash, and later consumption must match the actual committed target and chronology."
+  },
+  "schema_privileges": {
+    "schema": "public",
+    "honor_app": [
+      "USAGE"
+    ],
+    "create": false
+  },
+  "sequence_privileges": {
+    "required_sequences": [],
+    "reason": "V1 application tables use UUID identifiers and no sequence-backed runtime insert columns."
+  },
+  "function_privileges": {
+    "public_execute_revoked": true,
+    "unlisted_function_execute": false,
+    "honor_app_execute_only": [
+      "honor_00_clip_recommendation_revision_guard()",
+      "honor_00_experiment_arm_identity_guard()",
+      "honor_00_experiment_row_identity_guard()",
+      "honor_01_posting_restriction_guard()",
+      "honor_absolute_uri(text)",
+      "honor_activate_campaign_rule_snapshot(uuid, uuid)",
+      "honor_allocation_guard()",
+      "honor_audio_allowed_uses_valid(jsonb)",
+      "honor_audio_asset_contract_guard()",
+      "honor_audio_asset_render_eligible(uuid, platform_enum)",
+      "honor_audio_plan_asset_rights_guard()",
+      "honor_audio_plan_version_guard()",
+      "honor_audio_rule_enforcement_guard()",
+      "honor_campaign_mirror_guard()",
+      "honor_campaign_rule_guard()",
+      "honor_campaign_rule_typed_value_valid(text, jsonb)",
+      "honor_candidate_lineage_guard()",
+      "honor_clip_cross_record_guard()",
+      "honor_clip_provenance_lock_guard()",
+      "honor_clip_ready_guard()",
+      "honor_clip_render_start_guard()",
+      "honor_commit_source_rights_version(uuid, uuid, integer, uuid, source_eligibility_enum, jsonb, jsonb, text, text, text, timestamptz, timestamptz, text, text, uuid[])",
+      "honor_current_rights_for_action(uuid, uuid, platform_enum, text, timestamptz)",
+      "honor_disclosure_deadline_guard()",
+      "honor_earning_lineage_guard()",
+      "honor_edit_plan_version_guard()",
+      "honor_experiment_history_guard()",
+      "honor_experiment_reference_guard()",
+      "honor_final_uniqueness_acceptance_guard()",
+      "honor_generation_run_history_guard()",
+      "honor_internal_action_time_guard()",
+      "honor_jsonb_exact_keys(jsonb, text[])",
+      "honor_lifecycle_guard()",
+      "honor_owner_action_lifecycle_guard()",
+      "honor_owner_action_resolution_valid(text, text, uuid, jsonb)",
+      "honor_owner_authorized()",
+      "honor_post_publish_guard()",
+      "honor_qc_truth_guard()",
+      "honor_reject_immutable_mutation()",
+      "honor_render_audio_disclosure_guard()",
+      "honor_render_manifest_action_rights_guard()",
+      "honor_render_manifest_audio_asset_guard()",
+      "honor_render_manifest_guard()",
+      "honor_render_start_audio_asset_rights_guard()",
+      "honor_restriction_compliance_guard()",
+      "honor_restriction_consumes_stage(text, text)",
+      "honor_restriction_proof_artifact_guard()",
+      "honor_rfc3339_datetime(text)",
+      "honor_rights_stage_allowed(uuid, uuid, platform_enum, text, timestamptz)",
+      "honor_round10_restriction_placement_guard()",
+      "honor_rule_set_consumption_guard()",
+      "honor_rule_set_runtime_schema_guard()",
+      "honor_rule_set_sealed_for_action(uuid, uuid, integer, timestamptz)",
+      "honor_seal_campaign_rule_set(uuid, uuid, integer)",
+      "honor_single_rule_set_guard()",
+      "honor_source_rights_version_guard()",
+      "honor_submission_lineage_guard()",
+      "honor_transcript_guard()",
+      "honor_transition_earning(uuid, earning_state_enum, timestamptz, text, text, text, text)"
+    ],
+    "admin_only_no_honor_app_execute": [
+      "honor_checkin_transition_allowed(checkin_status_enum, checkin_status_enum)",
+      "honor_submission_transition_allowed(submission_status_enum, submission_status_enum)"
+    ],
+    "rule": "Every HONOR-created function explicitly revokes PUBLIC. Trigger/RLS helpers and the two narrowly-scoped SECURITY DEFINER transaction functions are exact honor_app allowlist entries; direct table privileges remain least-privilege."
+  }
+}

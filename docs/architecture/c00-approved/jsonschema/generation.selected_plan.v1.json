@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/generation.selected_plan.v1.json",
+  "title": "generation.selected_plan.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "selected_campaign_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 0,
+      "maxItems": 50,
+      "uniqueItems": true
+    },
+    "selected_source_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 0,
+      "maxItems": 100,
+      "uniqueItems": true
+    },
+    "selected_social_account_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 0,
+      "maxItems": 20,
+      "uniqueItems": true
+    },
+    "recommended_clip_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 50
+    },
+    "estimated_incremental_cost_usd": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+      "description": "Exact non-negative USD decimal string with six fractional digits."
+    },
+    "allocation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 0,
+      "maxItems": 100,
+      "uniqueItems": true
+    },
+    "zero_allocation_reason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "NO_ELIGIBLE_CAMPAIGN",
+            "NO_AUTHORIZED_SOURCE",
+            "ACCOUNT_HEALTH",
+            "BUDGET_GOVERNOR",
+            "INSUFFICIENT_EVIDENCE",
+            "OWNER_CONSTRAINT"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "selected_campaign_ids",
+    "selected_source_ids",
+    "selected_social_account_ids",
+    "recommended_clip_count",
+    "estimated_incremental_cost_usd",
+    "allocation_ids",
+    "zero_allocation_reason"
+  ],
+  "x-honor-writer": "api|intelligence"
+}

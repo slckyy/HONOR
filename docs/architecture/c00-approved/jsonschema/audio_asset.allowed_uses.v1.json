@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/audio_asset.allowed_uses.v1.json",
+  "title": "audio_asset.allowed_uses.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "render_safe": {
+      "type": "boolean",
+      "description": "Must exactly equal audio_assets.render_safe; disagreement is rejected."
+    },
+    "commercial_use": {
+      "type": "boolean"
+    },
+    "derivative_edit": {
+      "type": "boolean"
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "TIKTOK",
+          "INSTAGRAM_REELS",
+          "YOUTUBE_SHORTS"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 3,
+      "uniqueItems": true
+    },
+    "campaign_restriction": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "V1 automatic embedding requires null. Any non-null campaign-specific restriction is ineligible until a future approved deterministic evaluator exists."
+    },
+    "license_evidence_required": {
+      "type": "boolean",
+      "description": "When true, the relational audio asset version must carry both immutable license_evidence_object_key and license_evidence_sha256."
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "render_safe",
+    "commercial_use",
+    "derivative_edit",
+    "platforms",
+    "campaign_restriction",
+    "license_evidence_required"
+  ],
+  "x-honor-writer": "admin-bootstrap",
+  "description": "Frozen structured rights for an immutable audio_assets version. Automatic compensated HONOR embedding requires every V1 eligibility condition in x-honor-v1-automatic-embedding-contract; missing/false/unknown never grants use.",
+  "x-honor-v1-automatic-embedding-contract": {
+    "active": true,
+    "audio_assets.render_safe": true,
+    "allowed_uses.render_safe": true,
+    "render_safe_authorities_must_match": true,
+    "commercial_use": true,
+    "derivative_edit": true,
+    "platform_must_be_listed": true,
+    "campaign_restriction_must_be_null": true,
+    "attribution_required_must_be_false": true,
+    "license_evidence_required_rule": "If true, immutable license_evidence_object_key and license_evidence_sha256 are both required.",
+    "checked_at": [
+      "AUDIO_PLAN_COMMIT",
+      "PLANNED_TO_RENDERING",
+      "RENDER_MANIFEST_ADMISSION"
+    ]
+  }
+}

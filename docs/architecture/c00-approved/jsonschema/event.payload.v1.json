@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/event.payload.v1.json",
+  "title": "event.payload.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "event_name": {
+      "type": "string",
+      "enum": [
+        "CAMPAIGN_DISCOVERED",
+        "CAMPAIGN_RULES_VERIFIED",
+        "CAMPAIGN_RULES_BLOCKED_UNKNOWN",
+        "SOURCE_INGESTED",
+        "SOURCE_ELIGIBILITY_VERIFIED",
+        "TRANSCRIPTION_COMPLETE",
+        "CANDIDATES_RANKED",
+        "FINALISTS_SELECTED",
+        "EDIT_PLAN_CREATED",
+        "AUDIO_PLAN_CREATED",
+        "CLIP_RENDER_REQUESTED",
+        "CLIP_RENDERED",
+        "QC_PASSED",
+        "QC_FAILED",
+        "CLIP_READY",
+        "POST_RECORDED",
+        "SUBMISSION_RECORDED",
+        "ANALYTICS_CHECKIN_DUE",
+        "ANALYTICS_RECEIVED",
+        "PAYOUT_ACCRUED_UNVERIFIED",
+        "PAYOUT_APPROVED",
+        "PAYOUT_WITHDRAWABLE",
+        "PAYOUT_WITHDRAWN",
+        "COST_RECORDED",
+        "POLLI_SESSION_STARTED",
+        "POLLI_TOOL_CALLED",
+        "POLLI_COST_RECORDED",
+        "OWNER_ACTION_REQUIRED",
+        "JOB_RETRY_SCHEDULED",
+        "JOB_FAILED_TERMINAL",
+        "JOB_SUCCEEDED"
+      ]
+    },
+    "subject_type": {
+      "type": "string",
+      "enum": [
+        "campaign",
+        "source",
+        "transcript",
+        "candidate",
+        "edit_plan",
+        "audio_plan",
+        "clip",
+        "post",
+        "submission",
+        "analytics_checkin",
+        "earning",
+        "cost",
+        "polli_session",
+        "polli_tool_call",
+        "owner_action",
+        "job"
+      ]
+    },
+    "subject_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "state": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 80
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason_code": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Z0-9_]{2,80}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "evidence_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "amount_usd": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "related_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 0,
+      "maxItems": 50,
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "event_name",
+    "subject_type",
+    "subject_id",
+    "state",
+    "reason_code",
+    "evidence_id",
+    "amount_usd",
+    "related_ids"
+  ],
+  "x-honor-writer": "api|worker|media|intelligence"
+}

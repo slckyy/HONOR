@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "architecture": "Next.js 16 App Router + @supabase/ssr cookie session; Supabase email/password; Invite/Recovery token-hash verifyOtp",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/login",
+      "auth": "public",
+      "purpose": "render owner login"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "auth": "public+same-origin+csrf",
+      "purpose": "signInWithPassword; set SSR cookies"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/recover",
+      "auth": "public+same-origin+csrf",
+      "purpose": "request recovery email; generic 202"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/confirm",
+      "auth": "public-token-hash",
+      "query": {
+        "token_hash": "required string",
+        "type": "invite|recovery"
+      },
+      "purpose": "server-side verifyOtp; establish SSR session; redirect only to fixed set-password route"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/set-password",
+      "auth": "owner-session",
+      "purpose": "render forced invite/recovery password update"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/set-password",
+      "auth": "owner-session+same-origin+csrf",
+      "purpose": "update password; rotate csrf; redirect /app"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout",
+      "auth": "owner-session+same-origin+csrf",
+      "purpose": "sign out; clear cookies; rotate csrf"
+    }
+  ],
+  "forbidden_v1_routes": [
+    "/auth/callback"
+  ],
+  "forbidden_v1_flows": [
+    "oauth",
+    "magic-link sign-in",
+    "authorization-code callback"
+  ]
+}

@@ -1,0 +1,5279 @@
+> HONOR C00 frozen Polli V1 tool contract — Round 7.
+
+# Polli Tool Contracts
+
+Polli is owner-only, read-only in V1. No SQL, shell, arbitrary HTTP, cloud-admin or financial mutation tool is exposed.
+
+maximum tool calls per turn: **6**; maximum tool calls per session: **60**.
+
+Canonical machine authority: `HONOR_POLLI_TOOL_SCHEMAS.json`. Every result uses the exact envelope fields `ok`, `tool_name`, `tool_version`, `as_of`, `truth_label`, `data`, `sources`, `warnings`, `cost_usd`, `page`.
+
+### `finance_summary`
+Authorization scope: `owner:finance:read`
+Deterministic responsibility: All revenue/spend sums and self-funded state are deterministic. Net profit is null with INCOMPLETE_UNKNOWN when material costs are missing.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "period": {
+      "type": "string",
+      "enum": [
+        "TODAY",
+        "MONTH",
+        "LIFETIME",
+        "CUSTOM"
+      ]
+    },
+    "from": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "to": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "period",
+    "from",
+    "to"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "finance_summary"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "FACT",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "accrued_unverified": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "approved": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "withdrawable": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "withdrawn": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "confirmed_gross_revenue": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "booked_spend": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "actual_reconciled_spend": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "net_profit_booked": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                  "description": "Exact USD decimal string with six fractional digits; never JSON number."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "net_profit_truth_state": {
+              "type": "string",
+              "enum": [
+                "FACT",
+                "INCOMPLETE_UNKNOWN"
+              ]
+            },
+            "target_progress_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "target_usd": {
+              "const": "4000.000000"
+            },
+            "self_funded_state": {
+              "type": "string",
+              "enum": [
+                "FACTORY_SELF_FUNDED",
+                "NOT_SELF_FUNDED",
+                "UNKNOWN_NOT_VERIFIED"
+              ]
+            },
+            "unreconciled_cost_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "completeness": {
+              "type": "string",
+              "enum": [
+                "COMPLETE",
+                "INCOMPLETE_UNKNOWN"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "accrued_unverified",
+            "approved",
+            "withdrawable",
+            "withdrawn",
+            "confirmed_gross_revenue",
+            "booked_spend",
+            "actual_reconciled_spend",
+            "net_profit_booked",
+            "net_profit_truth_state",
+            "target_progress_usd",
+            "target_usd",
+            "self_funded_state",
+            "unreconciled_cost_count",
+            "completeness"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "finance_summary"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `cost_summary`
+Authorization scope: `owner:costs:read`
+Deterministic responsibility: Compute governor components/state exactly from the cost ledger, commitments, pre-dispatch reservations, and prepaid-credit accounting per HONOR_COST_GOVERNOR.json. No optional paid work is admissible at exposure >=43.000000; projected month-end is informational only.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "period": {
+      "type": "string",
+      "enum": [
+        "TODAY",
+        "MONTH",
+        "LIFETIME",
+        "CUSTOM"
+      ]
+    },
+    "from": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "to": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "group_by": {
+      "type": "string",
+      "enum": [
+        "PROVIDER",
+        "SERVICE",
+        "CATEGORY",
+        "DAY"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "period",
+    "from",
+    "to",
+    "group_by"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "cost_summary"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "FACT",
+            "ESTIMATE",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "cash_spend_counted_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "unpaid_committed_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "admitted_queued_unfunded_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "prepaid_funding_purchased_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "prepaid_credit_remaining_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "governor_exposure_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "projected_month_end_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "remaining_hard_cap_usd": {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact USD decimal string with six fractional digits; never a JSON number."
+            },
+            "optional_pause_usd": {
+              "const": "43.000000"
+            },
+            "reserve_mode_usd": {
+              "const": "51.030000"
+            },
+            "hard_cap_usd": {
+              "const": "56.030000"
+            },
+            "governor_state": {
+              "type": "string",
+              "enum": [
+                "NORMAL",
+                "OPTIONAL_PAUSED",
+                "RESERVE",
+                "HARD_STOP"
+              ]
+            },
+            "groups": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "amount_usd": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                    "description": "Exact non-negative USD decimal string with six fractional digits."
+                  },
+                  "truth_label": {
+                    "type": "string",
+                    "enum": [
+                      "FACT",
+                      "ESTIMATE",
+                      "MODEL_ANALYSIS",
+                      "UNKNOWN"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "key",
+                  "amount_usd",
+                  "truth_label"
+                ]
+              },
+              "maxItems": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "cash_spend_counted_usd",
+            "unpaid_committed_usd",
+            "admitted_queued_unfunded_usd",
+            "prepaid_funding_purchased_usd",
+            "prepaid_credit_remaining_usd",
+            "governor_exposure_usd",
+            "projected_month_end_usd",
+            "remaining_hard_cap_usd",
+            "optional_pause_usd",
+            "reserve_mode_usd",
+            "hard_cap_usd",
+            "governor_state",
+            "groups"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "cost_summary"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `campaign_performance`
+Authorization scope: `owner:performance:read`
+Deterministic responsibility: Descriptive aggregations are deterministic; no causal inference.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "period": {
+      "type": "string",
+      "enum": [
+        "TODAY",
+        "MONTH",
+        "LIFETIME",
+        "CUSTOM"
+      ]
+    },
+    "from": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "to": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "cursor": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 512
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "campaign_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "maxItems": 100
+    },
+    "platform": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "TIKTOK",
+            "INSTAGRAM_REELS",
+            "YOUTUBE_SHORTS"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "period",
+    "from",
+    "to",
+    "campaign_ids",
+    "platform",
+    "limit",
+    "cursor"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "campaign_performance"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "FACT",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "campaign_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "clips": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "posts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "views": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "qualified_views": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "confirmed_earnings_usd": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                    "description": "Exact non-negative USD decimal string with six fractional digits."
+                  },
+                  "payout_per_qualified_view_usd": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                        "description": "Exact non-negative USD decimal string with six fractional digits."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "approval_rate_ppm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000,
+                        "description": "Exact ratio in parts-per-million; 1,000,000 = 100%."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "completeness": {
+                    "type": "string",
+                    "enum": [
+                      "COMPLETE",
+                      "INCOMPLETE_UNKNOWN"
+                    ]
+                  },
+                  "completion_rate_ppm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Completion ratio in parts-per-million; null means unavailable/UNKNOWN."
+                  },
+                  "average_watch_duration_ms": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Average watch duration per observed view in milliseconds when supplied/authoritatively derivable; null means unavailable."
+                  },
+                  "follower_delta": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Follower gain/loss attributable to the observation window when supplied by evidence; null means unavailable."
+                  },
+                  "completed_views": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Completed-view count when the platform/evidence supplies it; null means unavailable/UNKNOWN."
+                  },
+                  "avg_watch_pct": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Average watched percentage/retention percentage when supplied; null means unavailable."
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "campaign_id",
+                  "clips",
+                  "posts",
+                  "views",
+                  "qualified_views",
+                  "confirmed_earnings_usd",
+                  "payout_per_qualified_view_usd",
+                  "approval_rate_ppm",
+                  "completeness",
+                  "completion_rate_ppm",
+                  "average_watch_duration_ms",
+                  "follower_delta",
+                  "completed_views",
+                  "avg_watch_pct"
+                ]
+              },
+              "maxItems": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "items"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "next_cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "has_more": {
+                  "type": "boolean"
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "next_cursor",
+                "has_more",
+                "limit"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "campaign_performance"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `account_performance`
+Authorization scope: `owner:performance:read`
+Deterministic responsibility: Descriptive account aggregations and latest persisted health only.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "period": {
+      "type": "string",
+      "enum": [
+        "TODAY",
+        "MONTH",
+        "LIFETIME",
+        "CUSTOM"
+      ]
+    },
+    "from": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "to": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "cursor": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 512
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "account_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "maxItems": 100
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "period",
+    "from",
+    "to",
+    "account_ids",
+    "limit",
+    "cursor"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "account_performance"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "FACT",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "posts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "views": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "qualified_views": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "engagement_rate_ppm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000,
+                        "description": "Exact ratio in parts-per-million; 1,000,000 = 100%."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "confirmed_revenue_usd": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                    "description": "Exact non-negative USD decimal string with six fractional digits."
+                  },
+                  "health": {
+                    "type": "string",
+                    "enum": [
+                      "HEALTHY",
+                      "CAUTION",
+                      "PAUSED",
+                      "UNKNOWN"
+                    ]
+                  },
+                  "completeness": {
+                    "type": "string",
+                    "enum": [
+                      "COMPLETE",
+                      "INCOMPLETE_UNKNOWN"
+                    ]
+                  },
+                  "completion_rate_ppm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Completion ratio in parts-per-million; null means unavailable/UNKNOWN."
+                  },
+                  "average_watch_duration_ms": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Average watch duration per observed view in milliseconds when supplied/authoritatively derivable; null means unavailable."
+                  },
+                  "follower_delta": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Follower gain/loss attributable to the observation window when supplied by evidence; null means unavailable."
+                  },
+                  "completed_views": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Completed-view count when the platform/evidence supplies it; null means unavailable/UNKNOWN."
+                  },
+                  "avg_watch_pct": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Average watched percentage/retention percentage when supplied; null means unavailable."
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "account_id",
+                  "posts",
+                  "views",
+                  "qualified_views",
+                  "engagement_rate_ppm",
+                  "confirmed_revenue_usd",
+                  "health",
+                  "completeness",
+                  "completion_rate_ppm",
+                  "average_watch_duration_ms",
+                  "follower_delta",
+                  "completed_views",
+                  "avg_watch_pct"
+                ]
+              },
+              "maxItems": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "items"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "next_cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "has_more": {
+                  "type": "boolean"
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "next_cursor",
+                "has_more",
+                "limit"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "account_performance"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `edit_feature_performance`
+Authorization scope: `owner:analysis:read`
+Deterministic responsibility: Counts/deltas are deterministic; interpretation remains MODEL_ANALYSIS.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "period": {
+      "type": "string",
+      "enum": [
+        "TODAY",
+        "MONTH",
+        "LIFETIME",
+        "CUSTOM"
+      ]
+    },
+    "from": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "to": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "minimum_sample_count": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 1000,
+      "default": 10
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "period",
+    "from",
+    "to",
+    "minimum_sample_count",
+    "limit"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "edit_feature_performance"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "MODEL_ANALYSIS",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "feature_group": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "feature_value": {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  "sample_count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "outcome_delta_ppm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -1000000,
+                        "maximum": 1000000,
+                        "description": "Signed exact relative delta in parts-per-million."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "uncertainty_ppm": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000,
+                    "description": "Exact ratio in parts-per-million; 1,000,000 = 100%."
+                  },
+                  "truth_label": {
+                    "type": "string",
+                    "enum": [
+                      "FACT",
+                      "ESTIMATE",
+                      "MODEL_ANALYSIS",
+                      "UNKNOWN"
+                    ]
+                  },
+                  "completed_views": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Completed-view count when the platform/evidence supplies it; null means unavailable/UNKNOWN."
+                  },
+                  "completion_rate_ppm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Completion ratio in parts-per-million; null means unavailable/UNKNOWN."
+                  },
+                  "average_watch_duration_ms": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Average watch duration per observed view in milliseconds when supplied/authoritatively derivable; null means unavailable."
+                  },
+                  "avg_watch_pct": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Average watched percentage/retention percentage when supplied; null means unavailable."
+                  },
+                  "follower_delta": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Follower gain/loss attributable to the observation window when supplied by evidence; null means unavailable."
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "feature_group",
+                  "feature_value",
+                  "sample_count",
+                  "outcome_delta_ppm",
+                  "uncertainty_ppm",
+                  "truth_label",
+                  "completed_views",
+                  "completion_rate_ppm",
+                  "average_watch_duration_ms",
+                  "avg_watch_pct",
+                  "follower_delta"
+                ]
+              },
+              "maxItems": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "items"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "edit_feature_performance"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `audio_feature_performance`
+Authorization scope: `owner:analysis:read`
+Deterministic responsibility: Counts/deltas are deterministic; causal claims forbidden absent experiment evidence.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "period": {
+      "type": "string",
+      "enum": [
+        "TODAY",
+        "MONTH",
+        "LIFETIME",
+        "CUSTOM"
+      ]
+    },
+    "from": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "to": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "category": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "MUSIC",
+            "SFX",
+            "DENSITY",
+            "PLATFORM_NATIVE_AUDIO"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "minimum_sample_count": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 1000,
+      "default": 10
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "period",
+    "from",
+    "to",
+    "category",
+    "minimum_sample_count",
+    "limit"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "audio_feature_performance"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "MODEL_ANALYSIS",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "MUSIC",
+                      "SFX",
+                      "DENSITY",
+                      "PLATFORM_NATIVE_AUDIO"
+                    ]
+                  },
+                  "feature_value": {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  "sample_count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "outcome_delta_ppm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -1000000,
+                        "maximum": 1000000,
+                        "description": "Signed exact relative delta in parts-per-million."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "uncertainty_ppm": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000,
+                    "description": "Exact ratio in parts-per-million; 1,000,000 = 100%."
+                  },
+                  "truth_label": {
+                    "type": "string",
+                    "enum": [
+                      "FACT",
+                      "ESTIMATE",
+                      "MODEL_ANALYSIS",
+                      "UNKNOWN"
+                    ]
+                  },
+                  "completed_views": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Completed-view count when the platform/evidence supplies it; null means unavailable/UNKNOWN."
+                  },
+                  "completion_rate_ppm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Completion ratio in parts-per-million; null means unavailable/UNKNOWN."
+                  },
+                  "average_watch_duration_ms": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Average watch duration per observed view in milliseconds when supplied/authoritatively derivable; null means unavailable."
+                  },
+                  "avg_watch_pct": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Average watched percentage/retention percentage when supplied; null means unavailable."
+                  },
+                  "follower_delta": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Follower gain/loss attributable to the observation window when supplied by evidence; null means unavailable."
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "category",
+                  "feature_value",
+                  "sample_count",
+                  "outcome_delta_ppm",
+                  "uncertainty_ppm",
+                  "truth_label",
+                  "completed_views",
+                  "completion_rate_ppm",
+                  "average_watch_duration_ms",
+                  "avg_watch_pct",
+                  "follower_delta"
+                ]
+              },
+              "maxItems": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "items"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "audio_feature_performance"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `due_actions`
+Authorization scope: `owner:operations:read`
+Deterministic responsibility: Due/missed state from persisted timestamps/status only.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "horizon_hours": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 720,
+      "default": 72
+    },
+    "statuses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "DUE",
+          "MISSED",
+          "BLOCKED",
+          "EXPIRING"
+        ]
+      },
+      "maxItems": 4
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "cursor": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 512
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "horizon_hours",
+    "statuses",
+    "limit",
+    "cursor"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "due_actions"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "FACT",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "ANALYTICS_CHECKIN",
+                      "SUBMISSION",
+                      "OWNER_ACTION",
+                      "CAMPAIGN_EXPIRY"
+                    ]
+                  },
+                  "entity_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "DUE",
+                      "MISSED",
+                      "BLOCKED",
+                      "EXPIRING"
+                    ]
+                  },
+                  "due_at": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "summary": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "entity_id",
+                  "status",
+                  "due_at",
+                  "summary"
+                ]
+              },
+              "maxItems": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "items"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "next_cursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "has_more": {
+                  "type": "boolean"
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "next_cursor",
+                "has_more",
+                "limit"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "due_actions"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `target_progress`
+Authorization scope: `owner:finance:read`
+Deterministic responsibility: Confirmed progress / 4000 target is deterministic; target is not forecast.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "month": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "month"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "target_progress"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "FACT",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "confirmed_progress_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "accrued_unverified_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "target_usd": {
+              "const": "4000.000000"
+            },
+            "percent_of_target_ppm": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "description": "Exact ratio in parts-per-million; 1,000,000 = 100%."
+            },
+            "definition": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "confirmed_progress_usd",
+            "accrued_unverified_usd",
+            "target_usd",
+            "percent_of_target_ppm",
+            "definition"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "target_progress"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `generation_run_status`
+Authorization scope: `owner:generation:read`
+Deterministic responsibility: Persisted run/job/cost state only.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "run_id"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "generation_run_status"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "FACT",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "run_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "running",
+                "retrying",
+                "blocked-owner-action",
+                "failed-terminal",
+                "succeeded",
+                "cancelled"
+              ]
+            },
+            "stage": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "allocation_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "clip_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "maxItems": 100
+            },
+            "failure_code": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "cost_committed_usd": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+              "description": "Exact non-negative USD decimal string with six fractional digits."
+            },
+            "cost_actual_usd": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                  "description": "Exact non-negative USD decimal string with six fractional digits."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "owner_action_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "maxItems": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "run_id",
+            "state",
+            "stage",
+            "allocation_count",
+            "clip_ids",
+            "failure_code",
+            "cost_committed_usd",
+            "cost_actual_usd",
+            "owner_action_ids"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "generation_run_status"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `clip_status`
+Authorization scope: `owner:clips:read`
+Deterministic responsibility: Persisted clip/QC/post/submission/analytics status only.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "clip_id": {
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "clip_id"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "clip_status"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "FACT",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "clip_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "PLANNED",
+                "RENDERING",
+                "QC",
+                "READY",
+                "POSTED",
+                "ARCHIVED",
+                "EJECTED"
+              ]
+            },
+            "qc_passed": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "post_status": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "PUBLISHED",
+                    "INVALIDATED"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "submission_status": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "NOT_REQUIRED",
+                    "PENDING",
+                    "SUBMITTED",
+                    "ACCEPTED",
+                    "REJECTED",
+                    "UNKNOWN"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "analytics_due_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rule_snapshot_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "rights_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "clip_id",
+            "state",
+            "qc_passed",
+            "post_status",
+            "submission_status",
+            "analytics_due_count",
+            "rule_snapshot_id",
+            "rights_id"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "clip_status"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `allocation_analysis`
+Authorization scope: `owner:analysis:read`
+Deterministic responsibility: Eligibility gates deterministic; persisted model components exposed without creating a run.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "campaign_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "maxItems": 100
+    },
+    "account_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "maxItems": 100
+    },
+    "remaining_budget_usd": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "campaign_ids",
+    "account_ids",
+    "remaining_budget_usd",
+    "limit"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "allocation_analysis"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "MODEL_ANALYSIS",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "campaign_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "account_id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "eligible": {
+                    "type": "boolean"
+                  },
+                  "eligibility_reason": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "expected_payout_usd": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                        "description": "Exact non-negative USD decimal string with six fractional digits."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "marginal_cost_usd": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                    "description": "Exact non-negative USD decimal string with six fractional digits."
+                  },
+                  "information_value_ppm": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000,
+                    "description": "Exact ratio in parts-per-million; 1,000,000 = 100%."
+                  },
+                  "uncertainty_ppm": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000,
+                    "description": "Exact ratio in parts-per-million; 1,000,000 = 100%."
+                  },
+                  "suggested_clip_count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "truth_label": {
+                    "type": "string",
+                    "enum": [
+                      "FACT",
+                      "ESTIMATE",
+                      "MODEL_ANALYSIS",
+                      "UNKNOWN"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "campaign_id",
+                  "account_id",
+                  "eligible",
+                  "eligibility_reason",
+                  "expected_payout_usd",
+                  "marginal_cost_usd",
+                  "information_value_ppm",
+                  "uncertainty_ppm",
+                  "suggested_clip_count",
+                  "truth_label"
+                ]
+              },
+              "maxItems": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "items"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "allocation_analysis"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+### `fact_evidence`
+Authorization scope: `owner:evidence:read`
+Deterministic responsibility: Returns redacted evidence metadata only; never raw credentials.
+
+Arguments schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "evidence_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "evidence_ref"
+  ]
+}
+```
+
+Result schema:
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tool_name": {
+          "const": "fact_evidence"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "type": "string",
+          "enum": [
+            "FACT",
+            "UNKNOWN"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "evidence_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "DATABASE_ROW",
+                "EVENT",
+                "TERMS_SNAPSHOT",
+                "RIGHTS_EVIDENCE",
+                "COST_LEDGER",
+                "ANALYTICS_OBSERVATION",
+                "OWNER_EVIDENCE",
+                "DERIVED_QUERY"
+              ]
+            },
+            "captured_at": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source_name": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "safe_summary": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "sha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "locator": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "evidence_ref",
+            "kind",
+            "captured_at",
+            "source_name",
+            "safe_summary",
+            "sha256",
+            "locator"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "tool_name": {
+          "const": "fact_evidence"
+        },
+        "tool_version": {
+          "const": 1
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "truth_label": {
+          "const": "UNKNOWN"
+        },
+        "data": {
+          "type": "null"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "DATABASE_ROW",
+                  "EVENT",
+                  "TERMS_SNAPSHOT",
+                  "RIGHTS_EVIDENCE",
+                  "COST_LEDGER",
+                  "ANALYTICS_OBSERVATION",
+                  "OWNER_EVIDENCE",
+                  "DERIVED_QUERY"
+                ]
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "kind",
+              "as_of",
+              "description"
+            ]
+          },
+          "maxItems": 100
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z0-9_]{2,80}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "maxItems": 50
+        },
+        "cost_usd": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        "page": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_ARGUMENT",
+                "OWNER_FORBIDDEN",
+                "NOT_FOUND",
+                "RATE_LIMITED",
+                "DEPENDENCY_UNAVAILABLE",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "retryable"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "tool_name",
+        "tool_version",
+        "as_of",
+        "truth_label",
+        "data",
+        "sources",
+        "warnings",
+        "cost_usd",
+        "page",
+        "error"
+      ]
+    }
+  ]
+}
+```
+
+## Financial UNKNOWN rule
+
+Polli never substitutes zero for unavailable financial or analytics facts. Nullable values remain null and the result truth/completeness fields carry UNKNOWN/INCOMPLETE semantics where applicable.

@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/audit.metadata_redacted.v1.json",
+  "title": "audit.metadata_redacted.v1",
+  "x-honor-contract-class": "INTENTIONALLY_OPAQUE_REDACTED_METADATA",
+  "type": "object",
+  "maxProperties": 100,
+  "propertyNames": {
+    "not": {
+      "pattern": "(?i)(password|secret|token|authorization|cookie|session|private[_-]?key|api[_-]?key|signed[_-]?url|credential|bearer|jwt)"
+    }
+  },
+  "additionalProperties": {
+    "anyOf": [
+      {
+        "type": "string",
+        "maxLength": 4000
+      },
+      {
+        "type": "number"
+      },
+      {
+        "type": "integer"
+      },
+      {
+        "type": "boolean"
+      },
+      {
+        "type": "null"
+      },
+      {
+        "type": "array",
+        "items": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "maxProperties": 50,
+              "propertyNames": {
+                "not": {
+                  "pattern": "(?i)(password|secret|token|authorization|cookie|session|private[_-]?key|api[_-]?key|signed[_-]?url|credential|bearer|jwt)"
+                }
+              },
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "minItems": 0,
+                    "maxItems": 100
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "minItems": 0,
+        "maxItems": 100
+      },
+      {
+        "type": "object",
+        "maxProperties": 50,
+        "propertyNames": {
+          "not": {
+            "pattern": "(?i)(password|secret|token|authorization|cookie|session|private[_-]?key|api[_-]?key|signed[_-]?url|credential|bearer|jwt)"
+          }
+        },
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "minItems": 0,
+              "maxItems": 100
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "x-honor-writer": "api|worker",
+  "x-honor-max-container-depth": 2,
+  "x-honor-product-logic_dependency_allowed": false,
+  "description": "Redacted audit metadata only. Max two container levels, 100 top-level properties, 50 nested properties, 100 array items; secret-like keys are forbidden at every object level. Product logic MUST NOT depend on opaque metadata."
+}

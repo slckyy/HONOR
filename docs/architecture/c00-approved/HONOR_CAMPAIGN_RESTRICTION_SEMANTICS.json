@@ -1,0 +1,699 @@
+{
+  "schema_version": 1,
+  "artifact": "HONOR_CAMPAIGN_RESTRICTION_SEMANTICS",
+  "normalization_rule": "A provider clause may be mapped to a code only when its meaning is fully represented by that code/effect/scope. Nuanced or ambiguous language is normalized as campaign rule UNKNOWN with attributable evidence; downstream code MUST NOT guess.",
+  "effect_model": {
+    "REQUIRE": "The code's compliance predicate MUST be provably true before every consuming production stage. Missing/unverifiable proof is UNKNOWN and blocks where ready_forbidden_until_resolved=true.",
+    "PROHIBIT": "The code's violation predicate MUST be provably false before every consuming production stage. Missing/unverifiable proof is UNKNOWN and blocks where ready_forbidden_until_resolved=true."
+  },
+  "signature_contract": {
+    "edit_signature": "SHA256_RFC8785_CANONICAL_JSON over source_sha256 + material timeline + layout + captions + visual_emphasis + disclosure_render; timestamps/IDs excluded.",
+    "accepted_comparison_population": "READY, POSTED, or ARCHIVED clips only; EJECTED attempts do not satisfy uniqueness history.",
+    "NO_REUSED_EDIT": "same campaign_id; any prior accepted identical edit_signature blocks.",
+    "UNIQUE_PER_ACCOUNT": "same social_account_id; any prior accepted identical edit_signature blocks.",
+    "UNIQUE_PER_CAMPAIGN": "same campaign_id; any prior accepted identical edit_signature blocks."
+  },
+  "codes": {
+    "CAMPAIGN_AUTHORIZED_SOURCE_ONLY": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": false,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "SOURCE"
+      ],
+      "legal_effects": [
+        "REQUIRE"
+      ],
+      "consuming_stages": [
+        "allocation",
+        "edit_plan",
+        "render_qc"
+      ],
+      "structured_fact_or_field": "sources.origin_type == CAMPAIGN_AUTHORIZED and immutable source_rights_campaigns row for the exact campaign",
+      "compliance_proof": "restriction_compliance proof_kind=RIGHTS_CAMPAIGN_LINK and result=COMPLIANT",
+      "production_block": "source is not campaign-authorized for exact campaign",
+      "permitted_proof_kinds": [
+        "RIGHTS_CAMPAIGN_LINK"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "forbidden",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "source_material_restrictions"
+      ]
+    },
+    "OWNER_OWNED_SOURCE_ONLY": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": false,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "SOURCE"
+      ],
+      "legal_effects": [
+        "REQUIRE"
+      ],
+      "consuming_stages": [
+        "allocation",
+        "edit_plan",
+        "render_qc"
+      ],
+      "structured_fact_or_field": "sources.origin_type == OWNER_OWNED",
+      "compliance_proof": "restriction_compliance proof_kind=SOURCE_ORIGIN and result=COMPLIANT",
+      "production_block": "source origin is not OWNER_OWNED",
+      "permitted_proof_kinds": [
+        "SOURCE_ORIGIN"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "forbidden",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "source_material_restrictions"
+      ]
+    },
+    "NO_THIRD_PARTY_SOURCE": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": false,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "SOURCE"
+      ],
+      "legal_effects": [
+        "PROHIBIT"
+      ],
+      "consuming_stages": [
+        "allocation",
+        "edit_plan",
+        "render_qc"
+      ],
+      "structured_fact_or_field": "sources.origin_type must be CAMPAIGN_AUTHORIZED or OWNER_OWNED; EXPLICITLY_LICENSED counts as third-party for this code",
+      "compliance_proof": "restriction_compliance proof_kind=SOURCE_ORIGIN and result=COMPLIANT",
+      "production_block": "source origin is EXPLICITLY_LICENSED or unverified",
+      "permitted_proof_kinds": [
+        "SOURCE_ORIGIN"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "forbidden",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "source_material_restrictions"
+      ]
+    },
+    "NO_PROFANITY": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": true,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "CONTENT"
+      ],
+      "legal_effects": [
+        "PROHIBIT"
+      ],
+      "consuming_stages": [
+        "edit_plan",
+        "render_qc"
+      ],
+      "structured_fact_or_field": "transcript/content lexical scan plus rendered caption text scan",
+      "compliance_proof": "restriction_compliance proof_kind=TRANSCRIPT_LEXICAL_SCAN and QC campaign_restrictions PASS",
+      "production_block": "profanity detected or scan unavailable",
+      "permitted_proof_kinds": [
+        "TRANSCRIPT_LEXICAL_SCAN",
+        "OWNER_REVIEW"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "required iff proof_kind=OWNER_REVIEW; forbidden otherwise",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "content_restrictions"
+      ]
+    },
+    "BRAND_SAFE_ONLY": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": true,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "CONTENT"
+      ],
+      "legal_effects": [
+        "REQUIRE"
+      ],
+      "consuming_stages": [
+        "edit_plan",
+        "render_qc"
+      ],
+      "structured_fact_or_field": "structured content-safety review over selected transcript excerpt, captions, title and visual context",
+      "compliance_proof": "restriction_compliance proof_kind=CONTENT_SAFETY_REVIEW and result=COMPLIANT",
+      "production_block": "brand-safety review FAIL/UNKNOWN",
+      "permitted_proof_kinds": [
+        "CONTENT_SAFETY_REVIEW",
+        "OWNER_REVIEW"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "required iff proof_kind=OWNER_REVIEW; forbidden otherwise",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "content_restrictions"
+      ]
+    },
+    "NO_MISLEADING_CLAIMS": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": true,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "CONTENT"
+      ],
+      "legal_effects": [
+        "PROHIBIT"
+      ],
+      "consuming_stages": [
+        "edit_plan",
+        "render_qc",
+        "posting"
+      ],
+      "structured_fact_or_field": "claims-evidence review for factual claims introduced/preserved in edit/caption/title",
+      "compliance_proof": "restriction_compliance proof_kind=CLAIMS_EVIDENCE_REVIEW and result=COMPLIANT",
+      "production_block": "unsupported or misleading claim detected; UNKNOWN blocks",
+      "permitted_proof_kinds": [
+        "CLAIMS_EVIDENCE_REVIEW",
+        "OWNER_REVIEW"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "required iff proof_kind=OWNER_REVIEW; forbidden otherwise",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "content_restrictions"
+      ]
+    },
+    "NO_CROP": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": false,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "EDIT"
+      ],
+      "legal_effects": [
+        "PROHIBIT"
+      ],
+      "consuming_stages": [
+        "edit_plan",
+        "render",
+        "qc"
+      ],
+      "structured_fact_or_field": "edit_plan.layout.reframing_mode == FIT_NO_CROP; every layout event scale=1 and pan_x=pan_y=0; punch_ins empty",
+      "compliance_proof": "restriction_compliance proof_kind=EDIT_OPERATION_AUDIT and QC face_crop/campaign_restrictions PASS",
+      "production_block": "any crop/reframe/pan/zoom/punch-in or unverifiable source framing",
+      "campaign_overrides_default_editing": true,
+      "permitted_proof_kinds": [
+        "EDIT_OPERATION_AUDIT"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "forbidden",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "editing_restrictions"
+      ]
+    },
+    "NO_SPEED_CHANGE": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": false,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "EDIT"
+      ],
+      "legal_effects": [
+        "PROHIBIT"
+      ],
+      "consuming_stages": [
+        "edit_plan",
+        "render",
+        "qc"
+      ],
+      "structured_fact_or_field": "every edit_plan.timeline.cuts[].playback_rate == 1.0",
+      "compliance_proof": "restriction_compliance proof_kind=EDIT_OPERATION_AUDIT and QC campaign_restrictions PASS",
+      "production_block": "any speed manipulation/time-stretch other than cut selection",
+      "permitted_proof_kinds": [
+        "EDIT_OPERATION_AUDIT"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "forbidden",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "editing_restrictions"
+      ]
+    },
+    "NO_TEXT_OVERLAY": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": false,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "EDIT"
+      ],
+      "legal_effects": [
+        "PROHIBIT"
+      ],
+      "consuming_stages": [
+        "edit_plan",
+        "render",
+        "qc"
+      ],
+      "structured_fact_or_field": "burned captions ARE text overlays; edit_plan.captions.enabled=false with chunks=[] and disclosure_render.overlay_events=[]",
+      "compliance_proof": "restriction_compliance proof_kind=CAPTION_OVERLAY_AUDIT and QC caption_overlap/campaign_restrictions PASS",
+      "production_block": "any burned caption/title/lower-third/disclosure overlay. If disclosure placement VIDEO/BOTH is also required, the rules conflict and edit planning blocks rather than weakening either rule.",
+      "burned_captions_count_as_text_overlay": true,
+      "permitted_proof_kinds": [
+        "CAPTION_OVERLAY_AUDIT"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "forbidden",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "editing_restrictions"
+      ]
+    },
+    "NO_REUSED_EDIT": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": false,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "UNIQUENESS"
+      ],
+      "legal_effects": [
+        "PROHIBIT"
+      ],
+      "consuming_stages": [
+        "edit_plan",
+        "render_qc"
+      ],
+      "structured_fact_or_field": "edit_plan.output.edit_signature_sha256 compared against accepted clips in same campaign",
+      "compliance_proof": "restriction_compliance proof_kind=EDIT_SIGNATURE_COMPARISON and QC uniqueness PASS",
+      "production_block": "duplicate signature in same campaign",
+      "permitted_proof_kinds": [
+        "EDIT_SIGNATURE_COMPARISON"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "forbidden",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "uniqueness_rules"
+      ]
+    },
+    "UNIQUE_PER_ACCOUNT": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": false,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "UNIQUENESS"
+      ],
+      "legal_effects": [
+        "REQUIRE"
+      ],
+      "consuming_stages": [
+        "allocation",
+        "render_qc"
+      ],
+      "structured_fact_or_field": "edit_plan.output.edit_signature_sha256 compared against accepted clips for exact social_account_id",
+      "compliance_proof": "QC uniqueness PASS with exact account comparison scope",
+      "production_block": "duplicate signature for account",
+      "permitted_proof_kinds": [
+        "EDIT_SIGNATURE_COMPARISON"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "forbidden",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "uniqueness_rules"
+      ]
+    },
+    "UNIQUE_PER_CAMPAIGN": {
+      "unknown_handling": "UNKNOWN/unverifiable compliance blocks the listed consuming stage; it never means compliant.",
+      "owner_review_can_resolve": false,
+      "ready_forbidden_until_resolved": true,
+      "legal_scopes": [
+        "UNIQUENESS"
+      ],
+      "legal_effects": [
+        "REQUIRE"
+      ],
+      "consuming_stages": [
+        "allocation",
+        "render_qc"
+      ],
+      "structured_fact_or_field": "edit_plan.output.edit_signature_sha256 compared against accepted clips for exact campaign_id",
+      "compliance_proof": "QC uniqueness PASS with exact campaign comparison scope",
+      "production_block": "duplicate signature for campaign",
+      "permitted_proof_kinds": [
+        "EDIT_SIGNATURE_COMPARISON"
+      ],
+      "proof_reference_required": true,
+      "owner_review_resolution_rule": "forbidden",
+      "none_can_satisfy": false,
+      "legal_rule_keys": [
+        "uniqueness_rules"
+      ]
+    }
+  },
+  "fixtures": [
+    {
+      "name": "CAMPAIGN_AUTHORIZED_SOURCE_ONLY_positive",
+      "code": "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+      "effect": "REQUIRE",
+      "scope": "SOURCE",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "CAMPAIGN_AUTHORIZED_SOURCE_ONLY_negative",
+      "code": "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+      "effect": "REQUIRE",
+      "scope": "SOURCE",
+      "proof_state": "UNKNOWN",
+      "expected": "REJECT"
+    },
+    {
+      "name": "OWNER_OWNED_SOURCE_ONLY_positive",
+      "code": "OWNER_OWNED_SOURCE_ONLY",
+      "effect": "REQUIRE",
+      "scope": "SOURCE",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "OWNER_OWNED_SOURCE_ONLY_negative",
+      "code": "OWNER_OWNED_SOURCE_ONLY",
+      "effect": "REQUIRE",
+      "scope": "SOURCE",
+      "proof_state": "UNKNOWN",
+      "expected": "REJECT"
+    },
+    {
+      "name": "NO_THIRD_PARTY_SOURCE_positive",
+      "code": "NO_THIRD_PARTY_SOURCE",
+      "effect": "PROHIBIT",
+      "scope": "SOURCE",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "NO_THIRD_PARTY_SOURCE_negative",
+      "code": "NO_THIRD_PARTY_SOURCE",
+      "effect": "PROHIBIT",
+      "scope": "SOURCE",
+      "proof_state": "VIOLATION",
+      "expected": "REJECT"
+    },
+    {
+      "name": "NO_PROFANITY_positive",
+      "code": "NO_PROFANITY",
+      "effect": "PROHIBIT",
+      "scope": "CONTENT",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "NO_PROFANITY_negative",
+      "code": "NO_PROFANITY",
+      "effect": "PROHIBIT",
+      "scope": "CONTENT",
+      "proof_state": "VIOLATION",
+      "expected": "REJECT"
+    },
+    {
+      "name": "BRAND_SAFE_ONLY_positive",
+      "code": "BRAND_SAFE_ONLY",
+      "effect": "REQUIRE",
+      "scope": "CONTENT",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "BRAND_SAFE_ONLY_negative",
+      "code": "BRAND_SAFE_ONLY",
+      "effect": "REQUIRE",
+      "scope": "CONTENT",
+      "proof_state": "UNKNOWN",
+      "expected": "REJECT"
+    },
+    {
+      "name": "NO_MISLEADING_CLAIMS_positive",
+      "code": "NO_MISLEADING_CLAIMS",
+      "effect": "PROHIBIT",
+      "scope": "CONTENT",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "NO_MISLEADING_CLAIMS_negative",
+      "code": "NO_MISLEADING_CLAIMS",
+      "effect": "PROHIBIT",
+      "scope": "CONTENT",
+      "proof_state": "VIOLATION",
+      "expected": "REJECT"
+    },
+    {
+      "name": "NO_CROP_positive",
+      "code": "NO_CROP",
+      "effect": "PROHIBIT",
+      "scope": "EDIT",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "NO_CROP_negative",
+      "code": "NO_CROP",
+      "effect": "PROHIBIT",
+      "scope": "EDIT",
+      "proof_state": "VIOLATION",
+      "expected": "REJECT"
+    },
+    {
+      "name": "NO_SPEED_CHANGE_positive",
+      "code": "NO_SPEED_CHANGE",
+      "effect": "PROHIBIT",
+      "scope": "EDIT",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "NO_SPEED_CHANGE_negative",
+      "code": "NO_SPEED_CHANGE",
+      "effect": "PROHIBIT",
+      "scope": "EDIT",
+      "proof_state": "VIOLATION",
+      "expected": "REJECT"
+    },
+    {
+      "name": "NO_TEXT_OVERLAY_positive",
+      "code": "NO_TEXT_OVERLAY",
+      "effect": "PROHIBIT",
+      "scope": "EDIT",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "NO_TEXT_OVERLAY_negative",
+      "code": "NO_TEXT_OVERLAY",
+      "effect": "PROHIBIT",
+      "scope": "EDIT",
+      "proof_state": "VIOLATION",
+      "expected": "REJECT"
+    },
+    {
+      "name": "NO_REUSED_EDIT_positive",
+      "code": "NO_REUSED_EDIT",
+      "effect": "PROHIBIT",
+      "scope": "UNIQUENESS",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "NO_REUSED_EDIT_negative",
+      "code": "NO_REUSED_EDIT",
+      "effect": "PROHIBIT",
+      "scope": "UNIQUENESS",
+      "proof_state": "VIOLATION",
+      "expected": "REJECT"
+    },
+    {
+      "name": "UNIQUE_PER_ACCOUNT_positive",
+      "code": "UNIQUE_PER_ACCOUNT",
+      "effect": "REQUIRE",
+      "scope": "UNIQUENESS",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "UNIQUE_PER_ACCOUNT_negative",
+      "code": "UNIQUE_PER_ACCOUNT",
+      "effect": "REQUIRE",
+      "scope": "UNIQUENESS",
+      "proof_state": "UNKNOWN",
+      "expected": "REJECT"
+    },
+    {
+      "name": "UNIQUE_PER_CAMPAIGN_positive",
+      "code": "UNIQUE_PER_CAMPAIGN",
+      "effect": "REQUIRE",
+      "scope": "UNIQUENESS",
+      "proof_state": "COMPLIANT",
+      "expected": "ACCEPT"
+    },
+    {
+      "name": "UNIQUE_PER_CAMPAIGN_negative",
+      "code": "UNIQUE_PER_CAMPAIGN",
+      "effect": "REQUIRE",
+      "scope": "UNIQUENESS",
+      "proof_state": "UNKNOWN",
+      "expected": "REJECT"
+    }
+  ],
+  "proof_enforcement": "COMPLIANT requires a code-specific permitted proof_kind and non-empty proof_reference. OWNER_REVIEW additionally requires owner_review_resolution_id and is legal only where owner_review_can_resolve=true. NONE can never satisfy an applicable restriction; UNKNOWN/VIOLATION never become COMPLIANT.",
+  "placement_contract": {
+    "rule_key_by_code": {
+      "CAMPAIGN_AUTHORIZED_SOURCE_ONLY": "source_material_restrictions",
+      "OWNER_OWNED_SOURCE_ONLY": "source_material_restrictions",
+      "NO_THIRD_PARTY_SOURCE": "source_material_restrictions",
+      "NO_PROFANITY": "content_restrictions",
+      "BRAND_SAFE_ONLY": "content_restrictions",
+      "NO_MISLEADING_CLAIMS": "content_restrictions",
+      "NO_CROP": "editing_restrictions",
+      "NO_SPEED_CHANGE": "editing_restrictions",
+      "NO_TEXT_OVERLAY": "editing_restrictions",
+      "NO_REUSED_EDIT": "uniqueness_rules",
+      "UNIQUE_PER_ACCOUNT": "uniqueness_rules",
+      "UNIQUE_PER_CAMPAIGN": "uniqueness_rules"
+    },
+    "rule_keys": {
+      "source_material_restrictions": [
+        "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+        "OWNER_OWNED_SOURCE_ONLY",
+        "NO_THIRD_PARTY_SOURCE"
+      ],
+      "content_restrictions": [
+        "NO_PROFANITY",
+        "BRAND_SAFE_ONLY",
+        "NO_MISLEADING_CLAIMS"
+      ],
+      "editing_restrictions": [
+        "NO_CROP",
+        "NO_SPEED_CHANGE",
+        "NO_TEXT_OVERLAY"
+      ],
+      "uniqueness_rules": [
+        "NO_REUSED_EDIT",
+        "UNIQUE_PER_ACCOUNT",
+        "UNIQUE_PER_CAMPAIGN"
+      ]
+    },
+    "seal_rule": "A restriction code is legal only under its listed canonical rule key. The seal rejects wrong-key placement and duplicate semantic code placement; UNKNOWN nuanced provider language remains UNKNOWN rather than being moved or force-fit."
+  },
+  "proof_reference_contract": {
+    "storage": "Every usable proof_reference identifies one immutable restriction_proof_artifacts row. Free-form strings are forbidden.",
+    "reference_object_required_keys": [
+      "proof_id",
+      "proof_kind",
+      "restriction_code",
+      "proof_sha256",
+      "target_type",
+      "target_id",
+      "subject_sha256",
+      "evidenced_at",
+      "result"
+    ],
+    "hash_rule": "proof_sha256 is the DB-verified SHA-256 of PostgreSQL jsonb canonical text over the proof artifact material fields excluding proof_sha256/created_at.",
+    "common_binding": "Referenced row must match restriction_code, proof_kind, campaign_id, rule_snapshot_id, candidate_id/source_id when applicable, target identity, subject_sha256, evidenced_at and result=COMPLIANT; evidenced_at must be no later than the consuming DB action/commit time.",
+    "proof_kinds": {
+      "RIGHTS_CAMPAIGN_LINK": {
+        "target_type": "SOURCE",
+        "required_relational_binding": "exact source_rights.id + record_hash and source_rights_campaigns row for exact campaign"
+      },
+      "SOURCE_ORIGIN": {
+        "target_type": "SOURCE",
+        "required_relational_binding": "exact sources.id + sources.sha256 and frozen origin_type predicate"
+      },
+      "TRANSCRIPT_LEXICAL_SCAN": {
+        "target_type": "CANDIDATE",
+        "required_relational_binding": "exact candidates.transcript_id + immutable succeeded transcripts.transcript_sha256"
+      },
+      "CONTENT_SAFETY_REVIEW": {
+        "target_type": "EDIT_PLAN",
+        "required_relational_binding": "proof subject_sha256 equals exact edit_plans.plan_hash being consumed; evidence_sha256 identifies immutable review artifact"
+      },
+      "CLAIMS_EVIDENCE_REVIEW": {
+        "target_type": "EDIT_PLAN_OR_POSTING_RECOMMENDATION",
+        "required_relational_binding": "edit-plan proof binds plan_hash; posting proof binds clip id + exact recommendation_version + deterministic posting-content SHA-256"
+      },
+      "EDIT_OPERATION_AUDIT": {
+        "target_type": "EDIT_PLAN",
+        "required_relational_binding": "proof subject_sha256 equals exact plan_hash plus direct DB edit-operation predicate"
+      },
+      "CAPTION_OVERLAY_AUDIT": {
+        "target_type": "EDIT_PLAN",
+        "required_relational_binding": "proof subject_sha256 equals exact plan_hash plus direct DB caption/overlay predicate"
+      },
+      "EDIT_SIGNATURE_COMPARISON": {
+        "target_type": "EDIT_PLAN",
+        "required_relational_binding": "proof subject_sha256 equals edit_plan.output.edit_signature_sha256 and direct/final accepted-signature enforcement remains authoritative"
+      },
+      "OWNER_REVIEW": {
+        "target_type": "EDIT_PLAN_OR_POSTING_RECOMMENDATION",
+        "required_relational_binding": "PRECOMMIT only: immutable RESOLVED owner_actions resolution binds exact campaign_id + sealed rule_snapshot_id + candidate_id + restriction_code + legal target_type + reserved target_id + target_version + subject_sha256. restriction_proof_artifacts mirrors target_version and resolution_sha256; consumer must match actual committed target/version/hash and resolved_at/evidenced_at <= DB-authored commit/revision time."
+      }
+    },
+    "owner_review_terminal_fact": "OWNER_REVIEW is PRECOMMIT evidence. Target row existence is NOT required at owner-action resolution. Candidate/source/campaign/sealed-rule/restriction context must already exist. The immutable owner resolution and proof mirror target_version and resolution_sha256 and grant nothing unless a later edit-plan/posting consumer matches exact target UUID/target_version/subject hash/context and chronology.",
+    "conditionally_required_fields": {
+      "OWNER_REVIEW": [
+        "target_version",
+        "owner_review_resolution_id"
+      ]
+    }
+  },
+  "posting_stage_proof_contract": {
+    "stage_driven": "On any material recommendation revision, every active restriction whose consuming_stages contains posting requires exactly one fresh COMPLIANT posting_restriction_compliance entry.",
+    "v1_active_code": "NO_MISLEADING_CLAIMS",
+    "content_hash": "SHA-256 of PostgreSQL jsonb text for jsonb_build_object(caption, platform_title), evaluated on the NEW recommendation.",
+    "freshness": "proof artifact target_type=POSTING_RECOMMENDATION, target_id=clip.id, recommendation_version=NEW recommendation_version, subject_sha256 equals NEW content hash, evidenced_at <= DB-authored recommendation_revised_at. Stale content/version proofs are rejected.",
+    "version_binding_policy": "ROUND11_OPTION_A_FRESH_ARTIFACT_EVERY_RECOMMENDATION_VERSION",
+    "unchanged_claim_text": "A material recommendation change that leaves caption/platform_title unchanged still requires a new proof artifact bound to the NEW recommendation_version; the subject_sha256 remains the same deterministic claim-content hash.",
+    "direct_compliance_mutation": "Any mutation/removal/replacement of posting_restriction_compliance changes posting_recommendation and is fully revalidated; no caption/title-change shortcut exists."
+  },
+  "owner_review_precommit_contract": {
+    "review_phase": "PRECOMMIT",
+    "owner_resolvable_codes": [
+      "NO_PROFANITY",
+      "BRAND_SAFE_ONLY",
+      "NO_MISLEADING_CLAIMS"
+    ],
+    "target_types": {
+      "EDIT_PLAN": {
+        "codes": [
+          "NO_PROFANITY",
+          "BRAND_SAFE_ONLY",
+          "NO_MISLEADING_CLAIMS"
+        ],
+        "target_id": "reserved future edit_plans.id",
+        "target_version": "intended plan_version",
+        "subject_sha256": "intended plan_hash"
+      },
+      "POSTING_RECOMMENDATION": {
+        "codes": [
+          "NO_MISLEADING_CLAIMS"
+        ],
+        "target_id": "reserved/existing clips.id",
+        "target_version": "intended recommendation_version",
+        "subject_sha256": "canonical SHA-256 over caption + platform_title claim-content object"
+      }
+    },
+    "resolution_time_validation": [
+      "candidate and source lineage already exist",
+      "campaign exists",
+      "rule snapshot belongs to campaign and has immutable campaign_rule_set_commits seal",
+      "restriction code occurs in exact sealed rule set",
+      "target type is legal for the code consuming stage",
+      "reserved target UUID parses as UUID",
+      "target_version >= 1",
+      "subject_sha256 is lowercase 64-hex",
+      "decision is COMPLIANT, VIOLATION, or UNKNOWN"
+    ],
+    "consumption_rule": "Review/proof grants nothing alone. Exact later target UUID/version/hash/campaign/rule/candidate/restriction must match and owner resolved_at/proof evidenced_at/proof created_at must be <= DB-authored target commit/revision time.",
+    "retroactivity": "Forbidden: owner resolution and proof artifact must exist before the reviewed edit plan or recommendation version is committed."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "honor",
+  "private": true,
+  "version": "0.1.0-c01",
+  "engines": {"node": ">=22 <23"},
+  "workspaces": ["apps/web", "packages/design-system"],
+  "scripts": {
+    "dev": "npm --workspace @honor/web run dev",
+    "build": "npm --workspace @honor/web run build",
+    "typecheck": "npm --workspace @honor/web run typecheck",
+    "test:web": "npm --workspace @honor/web run test",
+    "contracts:generate": "python3 scripts/generate_contracts.py",
+    "contracts:check": "python3 scripts/check_contract_drift.py",
+    "test:python": "python3 -m pytest tests services/api/tests services/worker/tests services/media/tests services/intelligence/tests",
+    "test:static": "python3 scripts/static_acceptance.py"
+  }
+}

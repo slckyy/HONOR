@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/post.native_audio_used.v1.json",
+  "title": "post.native_audio_used.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "platform": {
+      "type": "string",
+      "enum": [
+        "TIKTOK",
+        "INSTAGRAM_REELS",
+        "YOUTUBE_SHORTS"
+      ]
+    },
+    "used": {
+      "type": "boolean"
+    },
+    "native_audio_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 500
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "native_audio_title": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 500
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "owner_note": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 1000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "not_baked_into_rendered_mp4": {
+      "const": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "platform",
+    "used",
+    "native_audio_id",
+    "native_audio_title",
+    "owner_note",
+    "not_baked_into_rendered_mp4"
+  ],
+  "x-honor-writer": "api",
+  "description": "Owner record of platform-native audio applied in the native app after rendering; it is never baked into the HONOR MP4."
+}

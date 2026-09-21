@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/audio_plan.ducking.v1.json",
+  "title": "audio_plan.ducking.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean"
+    },
+    "speech_reduction_db": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 30
+    },
+    "attack_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2000
+    },
+    "release_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5000
+    },
+    "fade_in_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "fade_out_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "enabled",
+    "speech_reduction_db",
+    "attack_ms",
+    "release_ms",
+    "fade_in_ms",
+    "fade_out_ms"
+  ],
+  "x-honor-writer": "media"
+}

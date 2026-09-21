@@ -1,0 +1,153 @@
+{
+  "services": {
+    "redis": {
+      "image": "redis:8.10.1",
+      "restart": "unless-stopped",
+      "command": [
+        "sh",
+        "-c",
+        "exec redis-server --protected-mode yes --appendonly yes --requirepass $$REDIS_PASSWORD"
+      ],
+      "env_file": [
+        "/opt/honor/secrets/redis.env"
+      ],
+      "expose": [
+        "6379"
+      ],
+      "volumes": [
+        "redis-data:/data"
+      ]
+    },
+    "api": {
+      "image": "ghcr.io/OWNER/HONOR-api:RELEASE",
+      "restart": "unless-stopped",
+      "env_file": [
+        "/opt/honor/config/api.env",
+        "/opt/honor/secrets/api.env"
+      ],
+      "expose": [
+        "8000"
+      ],
+      "depends_on": [
+        "redis"
+      ]
+    },
+    "worker": {
+      "image": "ghcr.io/OWNER/HONOR-worker:RELEASE",
+      "restart": "unless-stopped",
+      "command": [
+        "celery",
+        "-A",
+        "honor_worker.celery_app:app",
+        "worker",
+        "--loglevel=INFO",
+        "--concurrency=1"
+      ],
+      "env_file": [
+        "/opt/honor/config/worker.env",
+        "/opt/honor/secrets/worker.env"
+      ],
+      "depends_on": [
+        "redis"
+      ]
+    },
+    "reconciler": {
+      "image": "ghcr.io/OWNER/HONOR-worker:RELEASE",
+      "restart": "unless-stopped",
+      "command": [
+        "python",
+        "-m",
+        "honor_worker.reconciler"
+      ],
+      "env_file": [
+        "/opt/honor/config/worker.env",
+        "/opt/honor/secrets/reconciler.env"
+      ],
+      "depends_on": [
+        "redis"
+      ]
+    },
+    "web": {
+      "image": "ghcr.io/OWNER/HONOR-web:RELEASE",
+      "restart": "unless-stopped",
+      "env_file": [
+        "/opt/honor/config/web.env"
+      ],
+      "expose": [
+        "3000"
+      ],
+      "depends_on": [
+        "api"
+      ]
+    },
+    "caddy": {
+      "image": "caddy:2.10.2",
+      "restart": "unless-stopped",
+      "env_file": [
+        "/opt/honor/config/caddy.env"
+      ],
+      "ports": [
+        "80:80",
+        "443:443"
+      ],
+      "volumes": [
+        "../Caddyfile:/etc/caddy/Caddyfile:ro",
+        "caddy-data:/data",
+        "caddy-config:/config"
+      ],
+      "depends_on": [
+        "web",
+        "api"
+      ]
+    },
+    "migrate": {
+      "profiles": [
+        "admin"
+      ],
+      "image": "ghcr.io/OWNER/HONOR-api:RELEASE",
+      "command": [
+        "python",
+        "/app/scripts/migrate.py"
+      ],
+      "env_file": [
+        "/opt/honor/secrets/migration.env"
+      ],
+      "restart": "no"
+    },
+    "worker-monitor": {
+      "image": "ghcr.io/OWNER/HONOR-worker:RELEASE",
+      "restart": "unless-stopped",
+      "command": [
+        "/app/infrastructure/monitoring/worker-heartbeat.sh"
+      ],
+      "env_file": [
+        "/opt/honor/config/worker.env",
+        "/opt/honor/secrets/worker-monitoring.env"
+      ],
+      "depends_on": [
+        "redis",
+        "worker",
+        "reconciler"
+      ]
+    },
+    "bootstrap-runtime-role": {
+      "profiles": [
+        "admin"
+      ],
+      "image": "ghcr.io/OWNER/HONOR-api:RELEASE",
+      "command": [
+        "python",
+        "/app/scripts/provision_runtime_role.py"
+      ],
+      "env_file": [
+        "/opt/honor/secrets/bootstrap.env"
+      ],
+      "restart": "no"
+    }
+  },
+  "volumes": {
+    "redis-data": {},
+    "caddy-data": {},
+    "caddy-config": {}
+  }
+}

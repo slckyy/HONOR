@@ -1,0 +1,249 @@
+{
+  "generated_from": "HONOR_OPENAPI.json",
+  "generation_rule": "method/path/operationId/auth/idempotency/request_schema are derived after resolving OpenAPI parameter refs",
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/healthz",
+      "operation_id": "healthz",
+      "browser_route": "/healthz",
+      "auth": "PUBLIC",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "GET",
+      "path": "/readyz",
+      "operation_id": "readyz",
+      "browser_route": "/api/readyz",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/generation-runs",
+      "operation_id": "createGenerationRun",
+      "browser_route": "/api/v1/generation-runs",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "GenerationRunCreateRequest"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/generation-runs/{id}",
+      "operation_id": "getGenerationRun",
+      "browser_route": "/api/v1/generation-runs/{id}",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/campaigns",
+      "operation_id": "listCampaigns",
+      "browser_route": "/api/v1/campaigns",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/campaigns/import",
+      "operation_id": "importCampaign",
+      "browser_route": "/api/v1/campaigns/import",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "CampaignImportRequest"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/campaigns/{id}",
+      "operation_id": "getCampaign",
+      "browser_route": "/api/v1/campaigns/{id}",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/uploads/intents",
+      "operation_id": "createUploadIntent",
+      "browser_route": "/api/v1/uploads/intents",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "UploadIntentRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/uploads/{id}/complete",
+      "operation_id": "completeUpload",
+      "browser_route": "/api/v1/uploads/{id}/complete",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "UploadCompleteRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/sources/import",
+      "operation_id": "importSource",
+      "browser_route": "/api/v1/sources/import",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "SourceImportRequest"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/sources/{id}",
+      "operation_id": "getSource",
+      "browser_route": "/api/v1/sources/{id}",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/clips",
+      "operation_id": "listClips",
+      "browser_route": "/api/v1/clips",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/clips/{id}",
+      "operation_id": "getClip",
+      "browser_route": "/api/v1/clips/{id}",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/schedule/tomorrow",
+      "operation_id": "getTomorrowSchedule",
+      "browser_route": "/api/v1/schedule/tomorrow",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/posts",
+      "operation_id": "createPost",
+      "browser_route": "/api/v1/posts",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "PostCreateRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/submissions",
+      "operation_id": "recordSubmission",
+      "browser_route": "/api/v1/submissions",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "SubmissionRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/analytics/check-ins",
+      "operation_id": "recordAnalyticsCheckin",
+      "browser_route": "/api/v1/analytics/check-ins",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "AnalyticsObservationInput"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/analytics/due",
+      "operation_id": "listDueAnalytics",
+      "browser_route": "/api/v1/analytics/due",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/payout-events",
+      "operation_id": "recordPayoutEvent",
+      "browser_route": "/api/v1/payout-events",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "PayoutEventRequest"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/finance/summary",
+      "operation_id": "getFinanceSummary",
+      "browser_route": "/api/v1/finance/summary",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/costs/summary",
+      "operation_id": "getCostSummary",
+      "browser_route": "/api/v1/costs/summary",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/polli/sessions",
+      "operation_id": "startPolliSession",
+      "browser_route": "/api/v1/polli/sessions",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "PolliSessionCreateRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/polli/live/sessions",
+      "operation_id": "createPolliLiveSession",
+      "browser_route": "/api/v1/polli/live/sessions",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "PolliLiveSessionRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/polli/query",
+      "operation_id": "queryPolli",
+      "browser_route": "/api/v1/polli/query",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "PolliQueryRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/polli/sessions/{id}/end",
+      "operation_id": "endPolliSession",
+      "browser_route": "/api/v1/polli/sessions/{id}/end",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "PolliSessionEndRequest"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/owner-actions",
+      "operation_id": "listOwnerActions",
+      "browser_route": "/api/v1/owner-actions",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "NOT_REQUIRED",
+      "request_schema": "none"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/owner-actions/{id}/resolve",
+      "operation_id": "resolveOwnerAction",
+      "browser_route": "/api/v1/owner-actions/{id}/resolve",
+      "auth": "OWNER_JWT_VIA_BFF",
+      "idempotency": "REQUIRED",
+      "request_schema": "OwnerActionResolveRequest"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+:root {
+  --honor-bg: #0b0c0f;
+  --honor-surface: #14161b;
+  --honor-text: #f4f1e8;
+  --honor-muted: #a8a39a;
+  --honor-accent: #c9a75d;
+  --honor-danger: #e16464;
+  --honor-radius-sm: 10px;
+  --honor-radius-md: 16px;
+  --honor-space-1: .25rem;
+  --honor-space-2: .5rem;
+  --honor-space-3: .75rem;
+  --honor-space-4: 1rem;
+  --honor-space-6: 1.5rem;
+  --honor-space-8: 2rem;
+  --honor-safe-top: env(safe-area-inset-top, 0px);
+  --honor-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.001ms!important; transition-duration:.001ms!important; } }

@@ -1,0 +1,757 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/campaign_rule.typed_value.v1.json",
+  "title": "campaign_rule.typed_value.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "STRING"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200000
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "STRING_ARRAY"
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "minItems": 0,
+          "maxItems": 200,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "INTEGER"
+        },
+        "value": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "BOOLEAN"
+        },
+        "value": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "MONEY_USD"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "TIMESTAMP"
+        },
+        "value": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "DURATION_SECONDS"
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "PLATFORMS"
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "TIKTOK",
+              "INSTAGRAM_REELS",
+              "YOUTUBE_SHORTS"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "REGIONS"
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}(-[A-Z0-9]{1,3})?$"
+          },
+          "minItems": 1,
+          "maxItems": 250,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "RATE"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$"
+            },
+            "basis": {
+              "type": "string",
+              "enum": [
+                "FLAT",
+                "PER_1000_VIEWS",
+                "PER_QUALIFIED_ACTION",
+                "OTHER"
+              ]
+            },
+            "unit_description": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "amount",
+            "basis",
+            "unit_description"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "CAMPAIGN_STATUS"
+        },
+        "value": {
+          "type": "string",
+          "enum": [
+            "DISCOVERED",
+            "VERIFYING",
+            "ACTIVE",
+            "PAUSED",
+            "ENDED",
+            "REJECTED"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "COMPENSATION_MODEL"
+        },
+        "value": {
+          "type": "string",
+          "enum": [
+            "CPM",
+            "FLAT_PER_CLIP",
+            "PER_QUALIFIED_ACTION",
+            "HYBRID",
+            "OTHER"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "ACCOUNT_REQUIREMENTS"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "min_followers": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "max_followers": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "require_posting_available": {
+              "type": "boolean"
+            },
+            "allowed_health_states": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "HEALTHY",
+                  "CAUTION"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 2,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "min_followers",
+            "max_followers",
+            "require_posting_available",
+            "allowed_health_states"
+          ],
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "min_followers": {
+                    "type": "integer"
+                  },
+                  "max_followers": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "min_followers",
+                  "max_followers"
+                ]
+              },
+              "then": {
+                "properties": {}
+              }
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "DISCLOSURE_REQUIREMENTS"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "text": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "instructions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "minItems": 0,
+              "maxItems": 20
+            },
+            "placement": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "CAPTION",
+                    "VIDEO",
+                    "BOTH",
+                    "PROVIDER_SUBMISSION"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "required",
+            "text",
+            "instructions",
+            "placement"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "RESTRICTION_SET"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "clauses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+                      "OWNER_OWNED_SOURCE_ONLY",
+                      "NO_THIRD_PARTY_SOURCE",
+                      "NO_PROFANITY",
+                      "BRAND_SAFE_ONLY",
+                      "NO_MISLEADING_CLAIMS",
+                      "NO_CROP",
+                      "NO_SPEED_CHANGE",
+                      "NO_TEXT_OVERLAY",
+                      "NO_REUSED_EDIT",
+                      "UNIQUE_PER_ACCOUNT",
+                      "UNIQUE_PER_CAMPAIGN"
+                    ]
+                  },
+                  "effect": {
+                    "type": "string",
+                    "enum": [
+                      "REQUIRE",
+                      "PROHIBIT"
+                    ]
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "SOURCE",
+                      "CONTENT",
+                      "EDIT",
+                      "UNIQUENESS"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "effect",
+                  "scope"
+                ]
+              },
+              "minItems": 0,
+              "maxItems": 50,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "clauses"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "SUBMISSION_FORMAT"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "instructions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1500
+              },
+              "minItems": 0,
+              "maxItems": 30
+            },
+            "submission_url": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "required_evidence": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "POST_URL",
+                  "PLATFORM_POST_ID",
+                  "SCREENSHOT",
+                  "ANALYTICS_SNAPSHOT",
+                  "OTHER"
+                ]
+              },
+              "minItems": 0,
+              "maxItems": 5,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "required",
+            "instructions",
+            "submission_url",
+            "required_evidence"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "WINDOW"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "start_offset_minutes": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 525600
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "end_offset_minutes": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 525600
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "description": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "start_offset_minutes",
+            "end_offset_minutes",
+            "description"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "RENDER_AUDIO_RULES"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "render_safe_audio": {
+              "type": "string",
+              "enum": [
+                "ALLOWED",
+                "PROHIBITED",
+                "UNKNOWN",
+                "NOT_APPLICABLE"
+              ]
+            },
+            "music_allowed": {
+              "type": "string",
+              "enum": [
+                "ALLOWED",
+                "PROHIBITED",
+                "UNKNOWN",
+                "NOT_APPLICABLE"
+              ]
+            },
+            "sfx_allowed": {
+              "type": "string",
+              "enum": [
+                "ALLOWED",
+                "PROHIBITED",
+                "UNKNOWN",
+                "NOT_APPLICABLE"
+              ]
+            },
+            "max_sfx_density": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "NONE",
+                    "LOW",
+                    "MEDIUM",
+                    "HIGH"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "instructions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "minItems": 0,
+              "maxItems": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "render_safe_audio",
+            "music_allowed",
+            "sfx_allowed",
+            "max_sfx_density",
+            "instructions"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "value_type": {
+          "const": "PLATFORM_NATIVE_AUDIO_RULES"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "TIKTOK": {
+              "type": "string",
+              "enum": [
+                "ALLOWED",
+                "PROHIBITED",
+                "UNKNOWN",
+                "NOT_APPLICABLE"
+              ]
+            },
+            "INSTAGRAM_REELS": {
+              "type": "string",
+              "enum": [
+                "ALLOWED",
+                "PROHIBITED",
+                "UNKNOWN",
+                "NOT_APPLICABLE"
+              ]
+            },
+            "YOUTUBE_SHORTS": {
+              "type": "string",
+              "enum": [
+                "ALLOWED",
+                "PROHIBITED",
+                "UNKNOWN",
+                "NOT_APPLICABLE"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "TIKTOK",
+            "INSTAGRAM_REELS",
+            "YOUTUBE_SHORTS"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value_type",
+        "value"
+      ]
+    }
+  ],
+  "x-honor-writer": "api|worker",
+  "description": "Envelope syntax only. HONOR_CAMPAIGN_RULE_REGISTRY.json selects exactly one permitted envelope schema per canonical rule_key; UNKNOWN/NOT_APPLICABLE always store typed_value=null."
+}

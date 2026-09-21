@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "rule_snapshot_identity": "campaign_terms_snapshots.id",
+  "registry": "HONOR_CAMPAIGN_RULE_REGISTRY.json",
+  "critical_unknown_policy": "For any key listed as blocking a stage in the rule registry, UNKNOWN or absent blocks that stage; it never means unrestricted.",
+  "stages": {
+    "allocation": {
+      "critical_rules": [
+        "status",
+        "compensation_model",
+        "cpm_or_rate",
+        "remaining_budget",
+        "start_at",
+        "end_at",
+        "deadline_at",
+        "eligible_platforms",
+        "eligible_regions",
+        "eligible_account_requirements",
+        "source_material_restrictions",
+        "uniqueness_rules"
+      ],
+      "outputs": [
+        "run_campaign_allocations.eligibility_decision",
+        "recommended_clip_count",
+        "rationale_json"
+      ]
+    },
+    "edit_plan": {
+      "critical_rules": [
+        "source_material_restrictions",
+        "clip_length_min_seconds",
+        "clip_length_max_seconds",
+        "content_restrictions",
+        "editing_restrictions",
+        "uniqueness_rules"
+      ],
+      "outputs": [
+        "edit_plans.plan_json.rule_compliance"
+      ]
+    },
+    "audio_plan": {
+      "critical_rules": [
+        "render_audio_rules",
+        "platform_native_audio_rules"
+      ],
+      "outputs": [
+        "audio_plans.platform_native_recommendation",
+        "audio plan render-safe choices"
+      ]
+    },
+    "render_qc": {
+      "critical_rules": [
+        "clip_length_min_seconds",
+        "clip_length_max_seconds",
+        "content_restrictions",
+        "editing_restrictions",
+        "uniqueness_rules",
+        "render_audio_rules"
+      ],
+      "outputs": [
+        "qc_runs.checks",
+        "qc_runs.metrics",
+        "READY gate"
+      ]
+    },
+    "posting": {
+      "critical_rules": [
+        "eligible_platforms",
+        "start_at",
+        "end_at",
+        "deadline_at",
+        "required_tags",
+        "required_mentions",
+        "required_hashtags",
+        "disclosure_requirements",
+        "submission_format",
+        "platform_native_audio_rules"
+      ],
+      "outputs": [
+        "clips.posting_recommendation"
+      ]
+    },
+    "submission": {
+      "critical_rules": [
+        "submission_format",
+        "deadline_at"
+      ],
+      "outputs": [
+        "submissions"
+      ]
+    },
+    "analytics_finance": {
+      "critical_rules": [
+        "analytics_window",
+        "payout_window",
+        "compensation_model",
+        "cpm_or_rate",
+        "minimum_views",
+        "max_payout_per_clip"
+      ],
+      "outputs": [
+        "analytics_checkins",
+        "earnings"
+      ]
+    }
+  },
+  "posting_exactness": {
+    "required_tags": "posting_recommendation.required_tags exact set",
+    "required_mentions": "posting_recommendation.required_mentions contains every required handle",
+    "required_hashtags": "posting_recommendation.hashtags contains every required hashtag",
+    "disclosure_requirements": "posting_recommendation.disclosure exactly mirrors required/text/instructions/placement; VIDEO/BOTH also require edit/render/QC proof; PROVIDER_SUBMISSION mirrors provider_disclosure",
+    "submission_format": "posting_recommendation.submission_requirements exact normalized requirements; deadline_at is the sealed campaign deadline mirror"
+  },
+  "duration_rule": "effective maximum = minimum of every KNOWN applicable campaign clip_length_max_seconds and source_rights.platform_limits.<platform>.max_clip_seconds; effective minimum = KNOWN campaign clip_length_min_seconds. UNKNOWN critical duration/restriction blocks edit/render/QC rather than implying infinity.",
+  "authority": "HONOR_CAMPAIGN_RULE_REGISTRY.json; immutable rule rows for exact campaign_terms_snapshots.id",
+  "posting_snapshot_requirements": {
+    "required_tags": "posting_recommendation.required_tags contains every KNOWN required tag",
+    "required_mentions": "posting_recommendation.required_mentions contains every KNOWN handle",
+    "required_hashtags": "posting_recommendation.hashtags contains every KNOWN required hashtag",
+    "disclosure_requirements": "posting_recommendation.disclosure exactly mirrors KNOWN rule value; UNKNOWN blocks recommendation",
+    "submission_format": "posting_recommendation.submission_requirements mirrors KNOWN rule value; UNKNOWN blocks recommendation/submission",
+    "source_attribution": "independent source-rights required_attribution must appear in posting_recommendation.source_attribution and caption"
+  },
+  "media_qc_requirements": {
+    "source_material_restrictions": "EDIT_PLAN/QC",
+    "clip_length_min_seconds": "EDIT_PLAN/RENDER/QC/READY",
+    "clip_length_max_seconds": "EDIT_PLAN/RENDER/QC/READY",
+    "content_restrictions": "EDIT_PLAN/QC",
+    "editing_restrictions": "EDIT_PLAN/QC",
+    "uniqueness_rules": "ALLOCATION/EDIT_PLAN/QC",
+    "render_audio_rules": "AUDIO_PLAN/RENDER/QC",
+    "platform_native_audio_rules": "AUDIO_PLAN/POSTING"
+  },
+  "future_recommendation_revalidation": "GET /v1/schedule/tomorrow and any owner-facing authorized posting recommendation must re-check honor_current_rights_for_action at response time; clips whose stored rights_id is no longer the latest authorized PUBLICATION_RECOMMENDATION version are omitted/blocked, while historical clip provenance remains unchanged.",
+  "sealed_rule_set_requirement": "Every allocation/edit/audio/clip recommendation/render/post/submission/finance consumer must resolve a campaign_rule_set_commits row for every referenced campaign rule snapshot, with committed_at <= its DB-authoritative decision/action time.",
+  "restriction_semantics": "HONOR_CAMPAIGN_RESTRICTION_SEMANTICS.json",
+  "render_audio_exactness": {
+    "render_safe_audio_PROHIBITED": "No render-safe MUSIC/SFX unless that exact class subrule is explicitly ALLOWED; UNKNOWN class permission never grants use.",
+    "music_allowed_PROHIBITED_OR_UNKNOWN": "music_asset_id MUST be null and render manifest contains no MUSIC asset.",
+    "sfx_allowed_PROHIBITED_OR_UNKNOWN": "sfx_events MUST be empty and density MUST be NONE.",
+    "max_sfx_density": "effective audio plan density may not exceed NONE<LOW<MEDIUM<HIGH; NONE means no SFX; null while SFX is ALLOWED blocks planning.",
+    "instructions": "Exact instructions are copied to audio_plan.rule_compliance and must be acknowledged when operationally material; render/QC verify exact planned assets.",
+    "outer_NOT_APPLICABLE": "Campaign adds no render-audio restriction; HONOR defaults may plan active render-safe assets. rule_compliance must bind the exact snapshot with all inner rule states NOT_APPLICABLE, null max density, empty instructions, and exact actual asset/density/event mirrors.",
+    "class_NOT_APPLICABLE": "When outer rule is KNOWN and a class subrule is NOT_APPLICABLE, the class inherits render_safe_audio: ALLOWED master permits it; PROHIBITED/UNKNOWN/NOT_APPLICABLE master does not. For SFX, null max_sfx_density means no campaign density cap only in this inherited NOT_APPLICABLE case."
+  },
+  "disclosure_placement": {
+    "CAPTION": "posting disclosure placement=CAPTION and required disclosure text/instruction is present in owner caption copy.",
+    "VIDEO": "edit_plan.disclosure_render + render_manifest.campaign_disclosure + QC disclosure_video must prove rendered disclosure; caption alone is insufficient.",
+    "BOTH": "CAPTION and VIDEO requirements both apply.",
+    "PROVIDER_SUBMISSION": "posting_recommendation.submission_requirements.provider_disclosure mirrors the campaign requirement.",
+    "UNKNOWN_OR_UNREPRESENTABLE": "blocks the relevant stage."
+  },
+  "submission_deadline_source": "V1 uses the sealed deadline_at campaign rule as posting_recommendation.submission_requirements.deadline_at unless a future approved schema adds a distinct submission-deadline rule. KNOWN must equal exactly; NOT_APPLICABLE -> null; UNKNOWN blocks recommendation/submission."
+}

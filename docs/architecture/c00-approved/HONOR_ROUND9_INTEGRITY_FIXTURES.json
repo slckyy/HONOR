@@ -1,0 +1,614 @@
+{
+  "schema_version": 1,
+  "rule_value_schema_cases": [
+    {
+      "name": "minimum_views_string_body",
+      "rule_key": "minimum_views",
+      "typed_value": {
+        "value_type": "INTEGER",
+        "value": "10"
+      },
+      "expect": "REJECT"
+    },
+    {
+      "name": "eligible_platforms_bad_member",
+      "rule_key": "eligible_platforms",
+      "typed_value": {
+        "value_type": "PLATFORMS",
+        "value": [
+          "TIKTOK",
+          "VIMEO"
+        ]
+      },
+      "expect": "REJECT"
+    },
+    {
+      "name": "disclosure_missing_placement",
+      "rule_key": "disclosure_requirements",
+      "typed_value": {
+        "value_type": "DISCLOSURE_REQUIREMENTS",
+        "value": {
+          "required": true,
+          "text": "ad",
+          "instructions": []
+        }
+      },
+      "expect": "REJECT"
+    },
+    {
+      "name": "account_requirements_extra_property",
+      "rule_key": "eligible_account_requirements",
+      "typed_value": {
+        "value_type": "ACCOUNT_REQUIREMENTS",
+        "value": {
+          "min_followers": 0,
+          "max_followers": null,
+          "require_posting_available": true,
+          "allowed_health_states": [
+            "HEALTHY"
+          ],
+          "extra": 1
+        }
+      },
+      "expect": "REJECT"
+    },
+    {
+      "name": "last_verified_future",
+      "rule_key": "last_verified_at",
+      "future": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "last_verified_not_actual_max",
+      "rule_key": "last_verified_at",
+      "contradicts_actual_verification_max": true,
+      "expect": "REJECT"
+    }
+  ],
+  "single_rule_set_cases": [
+    {
+      "name": "one_snapshot",
+      "edit_count": 1,
+      "same_audio_clip": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "two_snapshots",
+      "edit_count": 2,
+      "same_audio_clip": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "audio_mismatch",
+      "edit_count": 1,
+      "same_audio_clip": false,
+      "expect": "REJECT"
+    }
+  ],
+  "restriction_proof_cases": [
+    {
+      "code": "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+      "case": "missing_reference",
+      "proof_kind": "RIGHTS_CAMPAIGN_LINK",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+      "case": "prohibited_owner_review",
+      "proof_kind": "OWNER_REVIEW",
+      "proof_reference": "review",
+      "owner_review_resolution_id": "00000000-0000-0000-0000-000000000001",
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "OWNER_OWNED_SOURCE_ONLY",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "OWNER_OWNED_SOURCE_ONLY",
+      "case": "missing_reference",
+      "proof_kind": "SOURCE_ORIGIN",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "OWNER_OWNED_SOURCE_ONLY",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "OWNER_OWNED_SOURCE_ONLY",
+      "case": "prohibited_owner_review",
+      "proof_kind": "OWNER_REVIEW",
+      "proof_reference": "review",
+      "owner_review_resolution_id": "00000000-0000-0000-0000-000000000001",
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_THIRD_PARTY_SOURCE",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_THIRD_PARTY_SOURCE",
+      "case": "missing_reference",
+      "proof_kind": "SOURCE_ORIGIN",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_THIRD_PARTY_SOURCE",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_THIRD_PARTY_SOURCE",
+      "case": "prohibited_owner_review",
+      "proof_kind": "OWNER_REVIEW",
+      "proof_reference": "review",
+      "owner_review_resolution_id": "00000000-0000-0000-0000-000000000001",
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_PROFANITY",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_PROFANITY",
+      "case": "missing_reference",
+      "proof_kind": "TRANSCRIPT_LEXICAL_SCAN",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_PROFANITY",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "BRAND_SAFE_ONLY",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "BRAND_SAFE_ONLY",
+      "case": "missing_reference",
+      "proof_kind": "CONTENT_SAFETY_REVIEW",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "BRAND_SAFE_ONLY",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_MISLEADING_CLAIMS",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_MISLEADING_CLAIMS",
+      "case": "missing_reference",
+      "proof_kind": "CLAIMS_EVIDENCE_REVIEW",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_MISLEADING_CLAIMS",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_CROP",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_CROP",
+      "case": "missing_reference",
+      "proof_kind": "EDIT_OPERATION_AUDIT",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_CROP",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_CROP",
+      "case": "prohibited_owner_review",
+      "proof_kind": "OWNER_REVIEW",
+      "proof_reference": "review",
+      "owner_review_resolution_id": "00000000-0000-0000-0000-000000000001",
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_SPEED_CHANGE",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_SPEED_CHANGE",
+      "case": "missing_reference",
+      "proof_kind": "EDIT_OPERATION_AUDIT",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_SPEED_CHANGE",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_SPEED_CHANGE",
+      "case": "prohibited_owner_review",
+      "proof_kind": "OWNER_REVIEW",
+      "proof_reference": "review",
+      "owner_review_resolution_id": "00000000-0000-0000-0000-000000000001",
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_TEXT_OVERLAY",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_TEXT_OVERLAY",
+      "case": "missing_reference",
+      "proof_kind": "CAPTION_OVERLAY_AUDIT",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_TEXT_OVERLAY",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_TEXT_OVERLAY",
+      "case": "prohibited_owner_review",
+      "proof_kind": "OWNER_REVIEW",
+      "proof_reference": "review",
+      "owner_review_resolution_id": "00000000-0000-0000-0000-000000000001",
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_REUSED_EDIT",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_REUSED_EDIT",
+      "case": "missing_reference",
+      "proof_kind": "EDIT_SIGNATURE_COMPARISON",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_REUSED_EDIT",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "NO_REUSED_EDIT",
+      "case": "prohibited_owner_review",
+      "proof_kind": "OWNER_REVIEW",
+      "proof_reference": "review",
+      "owner_review_resolution_id": "00000000-0000-0000-0000-000000000001",
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "UNIQUE_PER_ACCOUNT",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "UNIQUE_PER_ACCOUNT",
+      "case": "missing_reference",
+      "proof_kind": "EDIT_SIGNATURE_COMPARISON",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "UNIQUE_PER_ACCOUNT",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "UNIQUE_PER_ACCOUNT",
+      "case": "prohibited_owner_review",
+      "proof_kind": "OWNER_REVIEW",
+      "proof_reference": "review",
+      "owner_review_resolution_id": "00000000-0000-0000-0000-000000000001",
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "UNIQUE_PER_CAMPAIGN",
+      "case": "wrong_proof_kind",
+      "proof_kind": "NONE",
+      "proof_reference": "x",
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "UNIQUE_PER_CAMPAIGN",
+      "case": "missing_reference",
+      "proof_kind": "EDIT_SIGNATURE_COMPARISON",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "UNIQUE_PER_CAMPAIGN",
+      "case": "none_compliant",
+      "proof_kind": "NONE",
+      "proof_reference": null,
+      "owner_review_resolution_id": null,
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    },
+    {
+      "code": "UNIQUE_PER_CAMPAIGN",
+      "case": "prohibited_owner_review",
+      "proof_kind": "OWNER_REVIEW",
+      "proof_reference": "review",
+      "owner_review_resolution_id": "00000000-0000-0000-0000-000000000001",
+      "result": "COMPLIANT",
+      "expect": "REJECT"
+    }
+  ],
+  "uniqueness_cases": [
+    {
+      "name": "two_inflight_same_campaign_signature",
+      "code": "UNIQUE_PER_CAMPAIGN",
+      "same_scope": true,
+      "same_signature": true,
+      "concurrent_ready": true,
+      "accepted_count": 1,
+      "expect": "SECOND_REJECT"
+    },
+    {
+      "name": "two_inflight_same_account_signature",
+      "code": "UNIQUE_PER_ACCOUNT",
+      "same_scope": true,
+      "same_signature": true,
+      "concurrent_ready": true,
+      "accepted_count": 1,
+      "expect": "SECOND_REJECT"
+    }
+  ],
+  "qc_truth_cases": [
+    {
+      "name": "video_decode_fail_assert_pass",
+      "check": "video_decode",
+      "status": "FAIL",
+      "caller_passed": true,
+      "derived_passed": false,
+      "expect": "REJECT_ASSERTED_PASS"
+    },
+    {
+      "name": "uniqueness_fail",
+      "check": "uniqueness",
+      "status": "FAIL",
+      "caller_passed": true,
+      "derived_passed": false,
+      "expect": "REJECT_ASSERTED_PASS"
+    },
+    {
+      "name": "watermark_fail",
+      "check": "watermark_absent",
+      "status": "FAIL",
+      "caller_passed": true,
+      "derived_passed": false,
+      "expect": "REJECT_ASSERTED_PASS"
+    },
+    {
+      "name": "caption_safe_fail",
+      "check": "caption_safe_bounds",
+      "status": "FAIL",
+      "caller_passed": true,
+      "derived_passed": false,
+      "expect": "REJECT_ASSERTED_PASS"
+    },
+    {
+      "name": "loudness_fail",
+      "check": "loudness_peak",
+      "status": "FAIL",
+      "caller_passed": true,
+      "derived_passed": false,
+      "expect": "REJECT_ASSERTED_PASS"
+    },
+    {
+      "name": "campaign_restriction_fail",
+      "check": "campaign_restrictions",
+      "status": "FAIL",
+      "caller_passed": true,
+      "derived_passed": false,
+      "expect": "REJECT_ASSERTED_PASS"
+    },
+    {
+      "name": "video_disclosure_fail",
+      "check": "disclosure_video",
+      "status": "FAIL",
+      "caller_passed": true,
+      "derived_passed": false,
+      "expect": "REJECT_ASSERTED_PASS"
+    },
+    {
+      "name": "caller_downgrades_hard_gate",
+      "check": "video_decode",
+      "status": "FAIL",
+      "hard_gate": false,
+      "expect": "REJECT"
+    }
+  ],
+  "recommendation_revision_cases": [
+    {
+      "name": "revise_after_publication_rights_revocation",
+      "created_authorized": true,
+      "current_authorized": false,
+      "expect": "REJECT"
+    }
+  ],
+  "experiment_serialization_cases": [
+    {
+      "name": "arm_insert_races_start",
+      "child_requires_parent_for_update": true,
+      "post_transition_child_allowed": false,
+      "expect": "SERIALIZED"
+    },
+    {
+      "name": "assignment_insert_races_stop",
+      "child_requires_parent_for_update": true,
+      "post_transition_child_allowed": false,
+      "expect": "SERIALIZED"
+    },
+    {
+      "name": "stopping_reason_rewrite",
+      "terminated": true,
+      "rewrite": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "stopped_completed_preserves_history",
+      "preserve_ended_at": true,
+      "preserve_stopping_reason": true,
+      "expect": "ACCEPT"
+    }
+  ]
+}

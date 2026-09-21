@@ -1,0 +1,527 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/owner_action.resolution.v1.json",
+  "title": "owner_action.resolution.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "resolution_type": {
+          "const": "CAMPAIGN_RULE"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "CONFIRM_VALUE",
+            "MARK_UNKNOWN",
+            "MARK_NOT_APPLICABLE"
+          ]
+        },
+        "rule_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "typed_value": {
+          "anyOf": [
+            {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "STRING"
+                    },
+                    "value": {
+                      "type": "string",
+                      "maxLength": 200000
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "STRING_ARRAY"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "minItems": 0,
+                      "maxItems": 200,
+                      "uniqueItems": true
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "INTEGER"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "BOOLEAN"
+                    },
+                    "value": {
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "MONEY_USD"
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                      "description": "Exact non-negative USD decimal string with six fractional digits."
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "TIMESTAMP"
+                    },
+                    "value": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "DURATION_SECONDS"
+                    },
+                    "value": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 86400
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "PLATFORMS"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "TIKTOK",
+                          "INSTAGRAM_REELS",
+                          "YOUTUBE_SHORTS"
+                        ]
+                      },
+                      "minItems": 0,
+                      "maxItems": 3,
+                      "uniqueItems": true
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "REGIONS"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}(-[A-Z0-9]{1,3})?$"
+                      },
+                      "minItems": 0,
+                      "maxItems": 250,
+                      "uniqueItems": true
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "value_type": {
+                      "const": "RATE"
+                    },
+                    "value": {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+                          "description": "Exact non-negative USD decimal string with six fractional digits."
+                        },
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "FLAT",
+                            "PER_1000_VIEWS",
+                            "PER_QUALIFIED_ACTION",
+                            "OTHER"
+                          ]
+                        },
+                        "unit_description": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 500
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "amount",
+                        "basis",
+                        "unit_description"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "value_type",
+                    "value"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_upload_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resolution_type",
+        "decision",
+        "rule_key",
+        "typed_value",
+        "evidence_upload_id",
+        "note"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "resolution_type": {
+          "const": "RESTRICTION_COMPLIANCE"
+        },
+        "review_phase": {
+          "const": "PRECOMMIT"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "COMPLIANT",
+            "VIOLATION",
+            "UNKNOWN"
+          ]
+        },
+        "restriction_code": {
+          "type": "string",
+          "enum": [
+            "NO_PROFANITY",
+            "BRAND_SAFE_ONLY",
+            "NO_MISLEADING_CLAIMS"
+          ]
+        },
+        "campaign_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "rule_snapshot_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "candidate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "target_type": {
+          "type": "string",
+          "enum": [
+            "EDIT_PLAN",
+            "POSTING_RECOMMENDATION"
+          ]
+        },
+        "target_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "target_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "subject_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resolution_type",
+        "review_phase",
+        "decision",
+        "restriction_code",
+        "campaign_id",
+        "rule_snapshot_id",
+        "candidate_id",
+        "target_type",
+        "target_id",
+        "target_version",
+        "subject_sha256",
+        "note"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "resolution_type": {
+          "const": "SOURCE_RIGHTS"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "AUTHORIZED",
+            "NOT_AUTHORIZED",
+            "UNKNOWN"
+          ]
+        },
+        "source_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "evidence_upload_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resolution_type",
+        "decision",
+        "source_id",
+        "evidence_upload_id",
+        "note"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "resolution_type": {
+          "const": "PROVIDER_SETUP"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "COMPLETED",
+            "DEFERRED",
+            "BLOCKED"
+          ]
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resolution_type",
+        "decision",
+        "provider",
+        "note"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "resolution_type": {
+          "const": "GENERIC_CONFIRMATION"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "CONFIRMED",
+            "DECLINED"
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resolution_type",
+        "decision",
+        "note"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "resolution_type": {
+          "const": "CANCELLED"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resolution_type",
+        "reason"
+      ]
+    }
+  ],
+  "x-honor-writer": "api",
+  "description": "Owner-action terminal resolution schema. RESTRICTION_COMPLIANCE uses a PRECOMMIT reserved target UUID/version/hash so human review can resolve before the reviewed edit-plan or posting-recommendation version is committed.",
+  "x-honor-owner-action-lifecycle": {
+    "creation": "OPEN only; requested_at/created_at DB-authored; no resolution at creation.",
+    "restriction_review": "PRECOMMIT only. The target row may not exist yet. Resolution binds campaign_id, sealed rule_snapshot_id, candidate_id, restriction_code, reserved target UUID, target_version and subject_sha256.",
+    "resolution": "OPEN -> RESOLVED; resolved_at DB-authored; canonical resolution validated; immutable SHA-256 stored.",
+    "cancellation": "OPEN -> CANCELLED with DB-authored cancelled_at and canonical cancellation reason.",
+    "terminal": "RESOLVED/CANCELLED immutable; no reopen or context/timestamp/resolution rewrite."
+  }
+}

@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "round": 12,
+  "artifact": "HONOR_ROUND12_INTEGRITY_FIXTURES",
+  "positive_flows": [
+    {
+      "name": "edit_plan_precommit_owner_review",
+      "target_type": "EDIT_PLAN",
+      "restriction_code": "BRAND_SAFE_ONLY",
+      "sequence": [
+        "CONTEXT_EXISTS",
+        "RESERVE_TARGET",
+        "COMPUTE_SUBJECT",
+        "CREATE_OPEN_OWNER_ACTION",
+        "RESOLVE_PRECOMMIT",
+        "CREATE_OWNER_REVIEW_PROOF",
+        "COMMIT_TARGET"
+      ],
+      "target_version": 2,
+      "row_exists_at_resolution": false,
+      "exact_target": true,
+      "exact_version": true,
+      "exact_hash": true,
+      "exact_context": true,
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "initial_posting_precommit_owner_review",
+      "target_type": "POSTING_RECOMMENDATION",
+      "restriction_code": "NO_MISLEADING_CLAIMS",
+      "sequence": [
+        "EDIT_PLAN_EXISTS",
+        "RESERVE_TARGET",
+        "COMPUTE_SUBJECT",
+        "CREATE_OPEN_OWNER_ACTION",
+        "RESOLVE_PRECOMMIT",
+        "CREATE_OWNER_REVIEW_PROOF",
+        "COMMIT_TARGET"
+      ],
+      "target_version": 1,
+      "row_exists_at_resolution": false,
+      "exact_target": true,
+      "exact_version": true,
+      "exact_hash": true,
+      "exact_context": true,
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "posting_revision_precommit_owner_review",
+      "target_type": "POSTING_RECOMMENDATION",
+      "restriction_code": "NO_MISLEADING_CLAIMS",
+      "sequence": [
+        "CURRENT_VERSION_EXISTS",
+        "PREPARE_NEXT_VERSION",
+        "COMPUTE_SUBJECT",
+        "CREATE_OPEN_OWNER_ACTION",
+        "RESOLVE_PRECOMMIT",
+        "CREATE_OWNER_REVIEW_PROOF",
+        "COMMIT_TARGET"
+      ],
+      "target_version": 3,
+      "row_exists_at_resolution": true,
+      "exact_target": true,
+      "exact_version": true,
+      "exact_hash": true,
+      "exact_context": true,
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "ACCEPT"
+    }
+  ],
+  "negative_consumption_cases": [
+    {
+      "name": "wrong_reserved_target_uuid",
+      "exact_target": false,
+      "exact_version": true,
+      "exact_hash": true,
+      "exact_context": true,
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "wrong_target_version",
+      "exact_target": true,
+      "exact_version": false,
+      "exact_hash": true,
+      "exact_context": true,
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "wrong_subject_hash",
+      "exact_target": true,
+      "exact_version": true,
+      "exact_hash": false,
+      "exact_context": true,
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "wrong_campaign",
+      "exact_target": true,
+      "exact_version": true,
+      "exact_hash": true,
+      "exact_context": false,
+      "context_mismatch": "campaign_id",
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "wrong_rule_snapshot",
+      "exact_target": true,
+      "exact_version": true,
+      "exact_hash": true,
+      "exact_context": false,
+      "context_mismatch": "rule_snapshot_id",
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "wrong_candidate",
+      "exact_target": true,
+      "exact_version": true,
+      "exact_hash": true,
+      "exact_context": false,
+      "context_mismatch": "candidate_id",
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "wrong_restriction",
+      "exact_target": true,
+      "exact_version": true,
+      "exact_hash": true,
+      "exact_context": false,
+      "context_mismatch": "restriction_code",
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "resolution_after_consuming_commit",
+      "exact_target": true,
+      "exact_version": true,
+      "exact_hash": true,
+      "exact_context": true,
+      "resolved_before_commit": false,
+      "proof_before_commit": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "reuse_posting_v1_review_for_v2",
+      "exact_target": true,
+      "exact_version": false,
+      "exact_hash": true,
+      "exact_context": true,
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "reuse_edit_review_for_another_plan",
+      "exact_target": false,
+      "exact_version": false,
+      "exact_hash": false,
+      "exact_context": true,
+      "resolved_before_commit": true,
+      "proof_before_commit": true,
+      "expect": "REJECT"
+    }
+  ],
+  "resolution_validation_cases": [
+    {
+      "name": "precommit_edit_target_absent_is_allowed",
+      "target_type": "EDIT_PLAN",
+      "restriction_code": "NO_PROFANITY",
+      "target_row_exists": false,
+      "context_exists": true,
+      "sealed": true,
+      "legal_stage": true,
+      "valid_uuid": true,
+      "valid_version": true,
+      "valid_hash": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "precommit_initial_clip_absent_is_allowed",
+      "target_type": "POSTING_RECOMMENDATION",
+      "restriction_code": "NO_MISLEADING_CLAIMS",
+      "target_row_exists": false,
+      "context_exists": true,
+      "sealed": true,
+      "legal_stage": true,
+      "valid_uuid": true,
+      "valid_version": true,
+      "valid_hash": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "posting_target_illegal_for_no_profanity",
+      "target_type": "POSTING_RECOMMENDATION",
+      "restriction_code": "NO_PROFANITY",
+      "target_row_exists": false,
+      "context_exists": true,
+      "sealed": true,
+      "legal_stage": false,
+      "valid_uuid": true,
+      "valid_version": true,
+      "valid_hash": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "unsealed_rule_set",
+      "target_type": "EDIT_PLAN",
+      "restriction_code": "BRAND_SAFE_ONLY",
+      "target_row_exists": false,
+      "context_exists": true,
+      "sealed": false,
+      "legal_stage": true,
+      "valid_uuid": true,
+      "valid_version": true,
+      "valid_hash": true,
+      "expect": "REJECT"
+    }
+  ],
+  "archive_inventory": {
+    "forbidden_path_components": [
+      "__pycache__",
+      ".pytest_cache"
+    ],
+    "forbidden_suffixes": [
+      ".pyc",
+      ".pyo",
+      ".tmp",
+      ".swp"
+    ],
+    "manifest_exception_only": "MANIFEST_SHA256.txt",
+    "rule": "Every regular file except MANIFEST_SHA256.txt must be listed; validator does not silently exclude cache/temp classes."
+  }
+}

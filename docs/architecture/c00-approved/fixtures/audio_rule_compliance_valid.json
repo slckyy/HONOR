@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "rule_snapshot_id": "66666666-6666-4666-8666-666666666666",
+  "rule_state": "KNOWN",
+  "render_safe_audio": "ALLOWED",
+  "music_allowed": "PROHIBITED",
+  "sfx_allowed": "ALLOWED",
+  "max_sfx_density": "LOW",
+  "effective_density": "LOW",
+  "instructions": [
+    "Keep dialogue dominant"
+  ],
+  "instructions_acknowledged": true,
+  "music_asset_id": null,
+  "sfx_event_count": 1,
+  "compliant": true
+}

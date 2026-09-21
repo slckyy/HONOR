@@ -1,0 +1,1020 @@
+{
+  "schema_version": 1,
+  "base": {
+    "source": {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "other_source": {
+      "id": "12121212-1212-4121-8121-121212121212",
+      "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    "campaign": {
+      "id": "22222222-2222-4222-8222-222222222222"
+    },
+    "other_campaign": {
+      "id": "23232323-2323-4232-8232-232323232323"
+    },
+    "run": {
+      "id": "33333333-3333-4333-8333-333333333333"
+    },
+    "candidate": {
+      "id": "44444444-4444-4444-8444-444444444444",
+      "source_id": "11111111-1111-4111-8111-111111111111",
+      "generation_run_id": "33333333-3333-4333-8333-333333333333"
+    },
+    "rule_snapshot": {
+      "id": "55555555-5555-4555-8555-555555555555",
+      "campaign_id": "22222222-2222-4222-8222-222222222222"
+    },
+    "other_rule_snapshot": {
+      "id": "56565656-5656-4565-8565-565656565656",
+      "campaign_id": "23232323-2323-4232-8232-232323232323"
+    },
+    "rights": {
+      "id": "66666666-6666-4666-8666-666666666666",
+      "source_id": "11111111-1111-4111-8111-111111111111",
+      "campaign_ids": [
+        "22222222-2222-4222-8222-222222222222"
+      ],
+      "rights_version": 1,
+      "record_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "other_source_rights": {
+      "id": "67676767-6767-4676-8676-676767676767",
+      "source_id": "12121212-1212-4121-8121-121212121212",
+      "campaign_ids": [
+        "22222222-2222-4222-8222-222222222222"
+      ],
+      "rights_version": 1,
+      "record_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    "edit_plan": {
+      "id": "77777777-7777-4777-8777-777777777777",
+      "candidate_id": "44444444-4444-4444-8444-444444444444",
+      "plan_version": 1,
+      "source_id": "11111111-1111-4111-8111-111111111111",
+      "source_rights_id": "66666666-6666-4666-8666-666666666666",
+      "rule_snapshot_ids": [
+        "55555555-5555-4555-8555-555555555555"
+      ],
+      "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "other_edit_plan": {
+      "id": "78787878-7878-4787-8787-787878787878",
+      "candidate_id": "49494949-4949-4494-8494-494949494949",
+      "plan_version": 1,
+      "source_id": "12121212-1212-4121-8121-121212121212",
+      "source_rights_id": "67676767-6767-4676-8676-676767676767",
+      "rule_snapshot_ids": [
+        "55555555-5555-4555-8555-555555555555"
+      ],
+      "source_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    "audio_plan": {
+      "id": "88888888-8888-4888-8888-888888888888",
+      "edit_plan_id": "77777777-7777-4777-8777-777777777777",
+      "plan_version": 1
+    },
+    "other_audio_plan": {
+      "id": "89898989-8989-4898-8898-898989898989",
+      "edit_plan_id": "78787878-7878-4787-8787-787878787878",
+      "plan_version": 1
+    }
+  },
+  "clip_cases": [
+    {
+      "name": "valid",
+      "rights": "rights",
+      "campaign_id": "campaign",
+      "rule_snapshot": "rule_snapshot",
+      "edit_plan": "edit_plan",
+      "audio_plan": "audio_plan",
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "rights_different_source",
+      "rights": "other_source_rights",
+      "campaign_id": "campaign",
+      "rule_snapshot": "rule_snapshot",
+      "edit_plan": "edit_plan",
+      "audio_plan": "audio_plan",
+      "expect": "REJECT"
+    },
+    {
+      "name": "rights_not_for_campaign",
+      "rights": "rights",
+      "campaign_id": "other_campaign",
+      "rule_snapshot": "other_rule_snapshot",
+      "edit_plan": "edit_plan",
+      "audio_plan": "audio_plan",
+      "expect": "REJECT"
+    },
+    {
+      "name": "rule_snapshot_other_campaign",
+      "rights": "rights",
+      "campaign_id": "campaign",
+      "rule_snapshot": "other_rule_snapshot",
+      "edit_plan": "edit_plan",
+      "audio_plan": "audio_plan",
+      "expect": "REJECT"
+    },
+    {
+      "name": "edit_plan_other_source_candidate",
+      "rights": "rights",
+      "campaign_id": "campaign",
+      "rule_snapshot": "rule_snapshot",
+      "edit_plan": "other_edit_plan",
+      "audio_plan": null,
+      "expect": "REJECT"
+    },
+    {
+      "name": "audio_plan_other_edit",
+      "rights": "rights",
+      "campaign_id": "campaign",
+      "rule_snapshot": "rule_snapshot",
+      "edit_plan": "edit_plan",
+      "audio_plan": "other_audio_plan",
+      "expect": "REJECT"
+    }
+  ],
+  "version_cases": [
+    {
+      "name": "rights_same_source_contiguous",
+      "kind": "rights",
+      "new_version": 2,
+      "predecessor_version": 1,
+      "same_identity": true,
+      "forked": false,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "rights_cross_source",
+      "kind": "rights",
+      "new_version": 2,
+      "predecessor_version": 1,
+      "same_identity": false,
+      "forked": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "rights_skip_version",
+      "kind": "rights",
+      "new_version": 3,
+      "predecessor_version": 1,
+      "same_identity": true,
+      "forked": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "edit_cross_candidate",
+      "kind": "edit",
+      "new_version": 2,
+      "predecessor_version": 1,
+      "same_identity": false,
+      "forked": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "edit_skip_version",
+      "kind": "edit",
+      "new_version": 3,
+      "predecessor_version": 1,
+      "same_identity": true,
+      "forked": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "audio_cross_edit_plan",
+      "kind": "audio",
+      "new_version": 2,
+      "predecessor_version": 1,
+      "same_identity": false,
+      "forked": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "audio_skip_version",
+      "kind": "audio",
+      "new_version": 3,
+      "predecessor_version": 1,
+      "same_identity": true,
+      "forked": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "rights_fork",
+      "kind": "rights",
+      "new_version": 2,
+      "predecessor_version": 1,
+      "same_identity": true,
+      "forked": true,
+      "expect": "REJECT"
+    }
+  ],
+  "protected_clip_fields": [
+    "generation_run_id",
+    "campaign_id",
+    "source_id",
+    "social_account_id",
+    "edit_plan_id",
+    "audio_plan_id",
+    "rule_snapshot_id",
+    "rights_id",
+    "final_object_key",
+    "sha256",
+    "duration_ms",
+    "width",
+    "height",
+    "codec",
+    "file_size_bytes"
+  ],
+  "round6": {
+    "campaign_snapshot_cases": [
+      {
+        "name": "current_snapshot_same_campaign",
+        "campaign": "A",
+        "snapshot_campaign": "A",
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "current_snapshot_cross_campaign",
+        "campaign": "A",
+        "snapshot_campaign": "B",
+        "expect": "REJECT"
+      },
+      {
+        "name": "rule_evidence_same_campaign",
+        "campaign": "A",
+        "snapshot_campaign": "A",
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "rule_evidence_cross_campaign",
+        "campaign": "A",
+        "snapshot_campaign": "B",
+        "expect": "REJECT"
+      }
+    ],
+    "post_cases": [
+      {
+        "name": "valid_ready_post",
+        "clip_state": "READY",
+        "clip_account": "acctA",
+        "post_account": "acctA",
+        "account_platform": "TIKTOK",
+        "post_platform": "TIKTOK",
+        "recommendation_platform": "TIKTOK",
+        "native_audio_platform": "TIKTOK",
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "wrong_account",
+        "clip_state": "READY",
+        "clip_account": "acctA",
+        "post_account": "acctB",
+        "account_platform": "TIKTOK",
+        "post_platform": "TIKTOK",
+        "recommendation_platform": "TIKTOK",
+        "native_audio_platform": "TIKTOK",
+        "expect": "REJECT"
+      },
+      {
+        "name": "wrong_platform",
+        "clip_state": "READY",
+        "clip_account": "acctA",
+        "post_account": "acctA",
+        "account_platform": "TIKTOK",
+        "post_platform": "INSTAGRAM_REELS",
+        "recommendation_platform": "TIKTOK",
+        "native_audio_platform": "INSTAGRAM_REELS",
+        "expect": "REJECT"
+      },
+      {
+        "name": "native_audio_platform_mismatch",
+        "clip_state": "READY",
+        "clip_account": "acctA",
+        "post_account": "acctA",
+        "account_platform": "TIKTOK",
+        "post_platform": "TIKTOK",
+        "recommendation_platform": "TIKTOK",
+        "native_audio_platform": "INSTAGRAM_REELS",
+        "expect": "REJECT"
+      },
+      {
+        "name": "invalid_clip_state",
+        "clip_state": "QC",
+        "clip_account": "acctA",
+        "post_account": "acctA",
+        "account_platform": "TIKTOK",
+        "post_platform": "TIKTOK",
+        "recommendation_platform": "TIKTOK",
+        "native_audio_platform": "TIKTOK",
+        "expect": "REJECT"
+      }
+    ],
+    "submission_cases": [
+      {
+        "name": "same_campaign",
+        "submission_campaign": "A",
+        "post_campaign": "A",
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "cross_campaign",
+        "submission_campaign": "B",
+        "post_campaign": "A",
+        "expect": "REJECT"
+      }
+    ],
+    "analytics_cases": [
+      {
+        "name": "same_post_checkin",
+        "observation_post": "A",
+        "checkin_post": "A",
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "cross_post_checkin",
+        "observation_post": "A",
+        "checkin_post": "B",
+        "expect": "REJECT"
+      }
+    ],
+    "earning_cases": [
+      {
+        "name": "post_same_campaign",
+        "earning_campaign": "A",
+        "post_campaign": "A",
+        "evidence_campaign": "A",
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "post_cross_campaign",
+        "earning_campaign": "B",
+        "post_campaign": "A",
+        "evidence_campaign": "B",
+        "expect": "REJECT"
+      },
+      {
+        "name": "evidence_cross_campaign",
+        "earning_campaign": "A",
+        "post_campaign": "A",
+        "evidence_campaign": "B",
+        "expect": "REJECT"
+      }
+    ],
+    "rights_association_cases": [
+      {
+        "name": "new_version_with_campaigns_in_commit",
+        "existing_rights": false,
+        "same_transaction": true,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "old_committed_rights_later_campaign_attach",
+        "existing_rights": true,
+        "same_transaction": false,
+        "expect": "REJECT"
+      }
+    ],
+    "rights_flag_cases": [
+      {
+        "name": "INGEST_all_true",
+        "stage": "INGEST",
+        "flags": {
+          "may_ingest": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "INGEST_may_ingest_false",
+        "stage": "INGEST",
+        "flags": {
+          "may_ingest": false
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "INGEST_unknown_eligibility",
+        "stage": "INGEST",
+        "flags": {
+          "may_ingest": true
+        },
+        "eligible": false,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "PAID_TRANSCRIPTION_all_true",
+        "stage": "PAID_TRANSCRIPTION",
+        "flags": {
+          "may_transcribe": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "PAID_TRANSCRIPTION_may_transcribe_false",
+        "stage": "PAID_TRANSCRIPTION",
+        "flags": {
+          "may_transcribe": false
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "PAID_TRANSCRIPTION_unknown_eligibility",
+        "stage": "PAID_TRANSCRIPTION",
+        "flags": {
+          "may_transcribe": true
+        },
+        "eligible": false,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "EDIT_PLAN_all_true",
+        "stage": "EDIT_PLAN",
+        "flags": {
+          "may_edit": true,
+          "derivative_edits": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "EDIT_PLAN_may_edit_false",
+        "stage": "EDIT_PLAN",
+        "flags": {
+          "may_edit": false,
+          "derivative_edits": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "EDIT_PLAN_derivative_edits_false",
+        "stage": "EDIT_PLAN",
+        "flags": {
+          "may_edit": true,
+          "derivative_edits": false
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "EDIT_PLAN_unknown_eligibility",
+        "stage": "EDIT_PLAN",
+        "flags": {
+          "may_edit": true,
+          "derivative_edits": true
+        },
+        "eligible": false,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "RENDER_all_true",
+        "stage": "RENDER",
+        "flags": {
+          "may_render": true,
+          "may_edit": true,
+          "derivative_edits": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "RENDER_may_render_false",
+        "stage": "RENDER",
+        "flags": {
+          "may_render": false,
+          "may_edit": true,
+          "derivative_edits": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "RENDER_may_edit_false",
+        "stage": "RENDER",
+        "flags": {
+          "may_render": true,
+          "may_edit": false,
+          "derivative_edits": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "RENDER_derivative_edits_false",
+        "stage": "RENDER",
+        "flags": {
+          "may_render": true,
+          "may_edit": true,
+          "derivative_edits": false
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "RENDER_unknown_eligibility",
+        "stage": "RENDER",
+        "flags": {
+          "may_render": true,
+          "may_edit": true,
+          "derivative_edits": true
+        },
+        "eligible": false,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "COMPENSATED_CAMPAIGN_PRODUCTION_all_true",
+        "stage": "COMPENSATED_CAMPAIGN_PRODUCTION",
+        "flags": {
+          "commercial_use": true,
+          "may_edit": true,
+          "derivative_edits": true,
+          "may_render": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "COMPENSATED_CAMPAIGN_PRODUCTION_commercial_use_false",
+        "stage": "COMPENSATED_CAMPAIGN_PRODUCTION",
+        "flags": {
+          "commercial_use": false,
+          "may_edit": true,
+          "derivative_edits": true,
+          "may_render": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "COMPENSATED_CAMPAIGN_PRODUCTION_may_edit_false",
+        "stage": "COMPENSATED_CAMPAIGN_PRODUCTION",
+        "flags": {
+          "commercial_use": true,
+          "may_edit": false,
+          "derivative_edits": true,
+          "may_render": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "COMPENSATED_CAMPAIGN_PRODUCTION_derivative_edits_false",
+        "stage": "COMPENSATED_CAMPAIGN_PRODUCTION",
+        "flags": {
+          "commercial_use": true,
+          "may_edit": true,
+          "derivative_edits": false,
+          "may_render": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "COMPENSATED_CAMPAIGN_PRODUCTION_may_render_false",
+        "stage": "COMPENSATED_CAMPAIGN_PRODUCTION",
+        "flags": {
+          "commercial_use": true,
+          "may_edit": true,
+          "derivative_edits": true,
+          "may_render": false
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "COMPENSATED_CAMPAIGN_PRODUCTION_unknown_eligibility",
+        "stage": "COMPENSATED_CAMPAIGN_PRODUCTION",
+        "flags": {
+          "commercial_use": true,
+          "may_edit": true,
+          "derivative_edits": true,
+          "may_render": true
+        },
+        "eligible": false,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "PUBLICATION_RECOMMENDATION_all_true",
+        "stage": "PUBLICATION_RECOMMENDATION",
+        "flags": {
+          "may_publish": true,
+          "commercial_use": true,
+          "derivative_edits": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "PUBLICATION_RECOMMENDATION_may_publish_false",
+        "stage": "PUBLICATION_RECOMMENDATION",
+        "flags": {
+          "may_publish": false,
+          "commercial_use": true,
+          "derivative_edits": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "PUBLICATION_RECOMMENDATION_commercial_use_false",
+        "stage": "PUBLICATION_RECOMMENDATION",
+        "flags": {
+          "may_publish": true,
+          "commercial_use": false,
+          "derivative_edits": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "PUBLICATION_RECOMMENDATION_derivative_edits_false",
+        "stage": "PUBLICATION_RECOMMENDATION",
+        "flags": {
+          "may_publish": true,
+          "commercial_use": true,
+          "derivative_edits": false
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "PUBLICATION_RECOMMENDATION_unknown_eligibility",
+        "stage": "PUBLICATION_RECOMMENDATION",
+        "flags": {
+          "may_publish": true,
+          "commercial_use": true,
+          "derivative_edits": true
+        },
+        "eligible": false,
+        "campaign_associated": true,
+        "platform_ok": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "PUBLICATION_RECOMMENDATION_platform_not_allowed",
+        "stage": "PUBLICATION_RECOMMENDATION",
+        "flags": {
+          "may_publish": true,
+          "commercial_use": true,
+          "derivative_edits": true
+        },
+        "eligible": true,
+        "campaign_associated": true,
+        "platform_ok": false,
+        "expect": "REJECT"
+      }
+    ],
+    "recommendation_expiration_cases": [
+      {
+        "name": "immediately_before",
+        "seconds_from_expiry": -1,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "exactly_at",
+        "seconds_from_expiry": 0,
+        "expect": "REJECT"
+      },
+      {
+        "name": "after",
+        "seconds_from_expiry": 1,
+        "expect": "REJECT"
+      }
+    ],
+    "native_audio_cases": [
+      {
+        "name": "audio_plan_exact_mirror",
+        "audio_status": "RECOMMENDED",
+        "posting_status": "RECOMMENDED",
+        "same_object": true,
+        "campaign_rule": "KNOWN_TRUE",
+        "expect": "ACCEPT",
+        "has_audio_plan": true
+      },
+      {
+        "name": "audio_plan_contradiction",
+        "audio_status": "PROHIBITED",
+        "posting_status": "RECOMMENDED",
+        "same_object": false,
+        "campaign_rule": "KNOWN_FALSE",
+        "expect": "REJECT",
+        "has_audio_plan": true
+      },
+      {
+        "name": "unknown_escalated",
+        "audio_status": "UNKNOWN",
+        "posting_status": "RECOMMENDED",
+        "same_object": false,
+        "campaign_rule": "UNKNOWN",
+        "expect": "REJECT",
+        "has_audio_plan": true
+      },
+      {
+        "name": "recommended_without_audio_plan",
+        "audio_status": null,
+        "posting_status": "RECOMMENDED",
+        "same_object": false,
+        "campaign_rule": "KNOWN_TRUE",
+        "has_audio_plan": false,
+        "expect": "REJECT"
+      }
+    ],
+    "timing_rule_cases": [
+      {
+        "name": "all_known_in_bounds",
+        "timing_known": true,
+        "inside_known_bounds": true,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "unknown_timing_blocks_recommendation",
+        "timing_known": false,
+        "inside_known_bounds": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "known_outside_campaign_bounds",
+        "timing_known": true,
+        "inside_known_bounds": false,
+        "expect": "REJECT"
+      }
+    ]
+  },
+  "round7": {
+    "native_audio_platform_cases": [
+      {
+        "name": "same_platform",
+        "post_platform": "TIKTOK",
+        "nested_platform": "TIKTOK",
+        "audio_plan_platform": "TIKTOK",
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "cross_platform",
+        "post_platform": "TIKTOK",
+        "nested_platform": "INSTAGRAM_REELS",
+        "audio_plan_platform": "INSTAGRAM_REELS",
+        "expect": "REJECT"
+      }
+    ],
+    "campaign_truth_cases": [
+      {
+        "name": "known_complete",
+        "state": "KNOWN",
+        "typed": true,
+        "evidence": true,
+        "verified": true,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "known_no_evidence",
+        "state": "KNOWN",
+        "typed": true,
+        "evidence": false,
+        "verified": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "unknown_with_value",
+        "state": "UNKNOWN",
+        "typed": true,
+        "evidence": true,
+        "verified": true,
+        "expect": "REJECT"
+      },
+      {
+        "name": "unknown_null",
+        "state": "UNKNOWN",
+        "typed": false,
+        "evidence": false,
+        "verified": false,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "na_with_value",
+        "state": "NOT_APPLICABLE",
+        "typed": true,
+        "evidence": true,
+        "verified": true,
+        "expect": "REJECT"
+      }
+    ],
+    "rights_action_time_cases": [
+      {
+        "name": "all_before",
+        "evidence_offset_s": -2,
+        "commit_offset_s": -1,
+        "applicability_offset_s": -1,
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "evidence_after",
+        "evidence_offset_s": 1,
+        "commit_offset_s": -1,
+        "applicability_offset_s": -1,
+        "expect": "REJECT"
+      },
+      {
+        "name": "commit_after",
+        "evidence_offset_s": -2,
+        "commit_offset_s": 1,
+        "applicability_offset_s": -1,
+        "expect": "REJECT"
+      },
+      {
+        "name": "applicability_after",
+        "evidence_offset_s": -2,
+        "commit_offset_s": -1,
+        "applicability_offset_s": 1,
+        "expect": "REJECT"
+      }
+    ],
+    "account_fact_cases": [
+      {
+        "name": "region missing",
+        "requires_region": true,
+        "region": null,
+        "expect": "UNKNOWN_BLOCKED"
+      },
+      {
+        "name": "followers missing",
+        "min_followers": 1000,
+        "followers": null,
+        "expect": "UNKNOWN_BLOCKED"
+      },
+      {
+        "name": "followers low",
+        "min_followers": 1000,
+        "followers": 999,
+        "expect": "INELIGIBLE"
+      },
+      {
+        "name": "known pass",
+        "min_followers": 1000,
+        "followers": 1200,
+        "region": "US",
+        "expect": "ELIGIBLE"
+      }
+    ],
+    "lifecycle_creation_cases": [
+      {
+        "table": "earnings",
+        "state": "ACCRUED_UNVERIFIED",
+        "expect": "ACCEPT"
+      },
+      {
+        "table": "earnings",
+        "state": "APPROVED",
+        "expect": "REJECT"
+      },
+      {
+        "table": "posts",
+        "state": "PUBLISHED",
+        "expect": "ACCEPT"
+      },
+      {
+        "table": "posts",
+        "state": "INVALIDATED",
+        "expect": "REJECT"
+      },
+      {
+        "table": "analytics_checkins",
+        "state": "PENDING",
+        "expect": "ACCEPT"
+      },
+      {
+        "table": "analytics_checkins",
+        "state": "COMPLETED",
+        "expect": "REJECT"
+      },
+      {
+        "table": "clips",
+        "state": "PLANNED",
+        "expect": "ACCEPT"
+      },
+      {
+        "table": "clips",
+        "state": "READY",
+        "expect": "REJECT"
+      }
+    ],
+    "candidate_transcript_cases": [
+      {
+        "name": "same_source_succeeded",
+        "candidate_source": "A",
+        "transcript_source": "A",
+        "status": "SUCCEEDED",
+        "expect": "ACCEPT"
+      },
+      {
+        "name": "other_source",
+        "candidate_source": "A",
+        "transcript_source": "B",
+        "status": "SUCCEEDED",
+        "expect": "REJECT"
+      },
+      {
+        "name": "failed",
+        "candidate_source": "A",
+        "transcript_source": "A",
+        "status": "FAILED",
+        "expect": "REJECT"
+      }
+    ],
+    "duration_cases": [
+      {
+        "campaign_max": 60,
+        "rights_max": 45,
+        "duration": 44.9,
+        "expect": "ACCEPT"
+      },
+      {
+        "campaign_max": 60,
+        "rights_max": 45,
+        "duration": 45.1,
+        "expect": "REJECT"
+      },
+      {
+        "campaign_max": 30,
+        "rights_max": 45,
+        "duration": 30.1,
+        "expect": "REJECT"
+      }
+    ],
+    "analytics_missing_metric_case": {
+      "completion_rate_ppm": null,
+      "completed_views": null,
+      "average_watch_duration_ms": null,
+      "follower_delta": null,
+      "expect": "ACCEPT_NULL_UNKNOWN"
+    },
+    "experiment_cases": [
+      {
+        "name": "assignment_identity_immutable_after_exposure",
+        "expect": "REJECT_MUTATION"
+      },
+      {
+        "name": "observational_correlation_not_causal",
+        "truth_label": "MODEL_ANALYSIS",
+        "expect": "ACCEPT"
+      }
+    ]
+  }
+}

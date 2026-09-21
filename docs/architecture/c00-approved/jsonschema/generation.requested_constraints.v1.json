@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/generation.requested_constraints.v1.json",
+  "title": "generation.requested_constraints.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "max_clips": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "max_incremental_paid_cost_usd": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+          "description": "Exact non-negative USD decimal string with six fractional digits."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "preferred_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "TIKTOK",
+          "INSTAGRAM_REELS",
+          "YOUTUBE_SHORTS"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 3,
+      "uniqueItems": true
+    },
+    "audio_density_cap": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "NONE",
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "require_campaign_ids_only": {
+      "type": "boolean"
+    },
+    "owner_note": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "max_clips",
+    "max_incremental_paid_cost_usd",
+    "preferred_platforms",
+    "audio_density_cap",
+    "require_campaign_ids_only",
+    "owner_note"
+  ],
+  "x-honor-writer": "api"
+}

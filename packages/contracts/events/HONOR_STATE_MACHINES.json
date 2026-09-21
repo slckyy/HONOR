@@ -1,0 +1,338 @@
+{
+  "schema_version": 1,
+  "submission": {
+    "enum": [
+      "NOT_REQUIRED",
+      "PENDING",
+      "SUBMITTED",
+      "ACCEPTED",
+      "REJECTED",
+      "UNKNOWN"
+    ],
+    "creation": [
+      "PENDING",
+      "SUBMITTED",
+      "NOT_REQUIRED",
+      "UNKNOWN"
+    ],
+    "transitions": {
+      "PENDING": [
+        "SUBMITTED",
+        "NOT_REQUIRED",
+        "UNKNOWN"
+      ],
+      "SUBMITTED": [
+        "ACCEPTED",
+        "REJECTED",
+        "UNKNOWN"
+      ],
+      "UNKNOWN": [
+        "PENDING",
+        "SUBMITTED",
+        "NOT_REQUIRED",
+        "ACCEPTED",
+        "REJECTED"
+      ],
+      "ACCEPTED": [],
+      "REJECTED": [],
+      "NOT_REQUIRED": []
+    }
+  },
+  "analytics_checkin": {
+    "enum": [
+      "PENDING",
+      "DUE",
+      "COMPLETED",
+      "MISSED",
+      "NOT_APPLICABLE"
+    ],
+    "creation": [
+      "PENDING"
+    ],
+    "transitions": {
+      "PENDING": [
+        "DUE",
+        "NOT_APPLICABLE"
+      ],
+      "DUE": [
+        "COMPLETED",
+        "MISSED",
+        "NOT_APPLICABLE"
+      ],
+      "MISSED": [
+        "COMPLETED"
+      ],
+      "COMPLETED": [],
+      "NOT_APPLICABLE": []
+    },
+    "observation_completion_rule": "POST /v1/analytics/check-ins may complete a linked check-in only when persisted prior state is DUE or MISSED."
+  },
+  "earning": {
+    "enum": [
+      "ACCRUED_UNVERIFIED",
+      "APPROVED",
+      "WITHDRAWABLE",
+      "WITHDRAWN",
+      "VOIDED"
+    ],
+    "creation": [
+      "ACCRUED_UNVERIFIED"
+    ],
+    "transitions": {
+      "ACCRUED_UNVERIFIED": [
+        "APPROVED",
+        "VOIDED"
+      ],
+      "APPROVED": [
+        "WITHDRAWABLE",
+        "VOIDED"
+      ],
+      "WITHDRAWABLE": [
+        "WITHDRAWN",
+        "VOIDED"
+      ],
+      "WITHDRAWN": [],
+      "VOIDED": []
+    },
+    "mutation_path": "honor_transition_earning only after creation"
+  },
+  "post": {
+    "enum": [
+      "PUBLISHED",
+      "INVALIDATED"
+    ],
+    "creation": [
+      "PUBLISHED"
+    ],
+    "transitions": {
+      "PUBLISHED": [
+        "INVALIDATED"
+      ],
+      "INVALIDATED": []
+    }
+  },
+  "clip": {
+    "enum": [
+      "PLANNED",
+      "RENDERING",
+      "QC",
+      "READY",
+      "EJECTED",
+      "POSTED",
+      "ARCHIVED"
+    ],
+    "creation": [
+      "PLANNED"
+    ],
+    "transitions": {
+      "PLANNED": [
+        "RENDERING",
+        "EJECTED"
+      ],
+      "RENDERING": [
+        "QC",
+        "EJECTED"
+      ],
+      "QC": [
+        "READY",
+        "EJECTED"
+      ],
+      "READY": [
+        "POSTED",
+        "ARCHIVED"
+      ],
+      "EJECTED": [],
+      "POSTED": [
+        "ARCHIVED"
+      ],
+      "ARCHIVED": []
+    }
+  },
+  "source_ingest": {
+    "enum": [
+      "PENDING_UPLOAD",
+      "QUEUED",
+      "INGESTING",
+      "READY",
+      "BLOCKED_RIGHTS",
+      "FAILED"
+    ],
+    "creation": [
+      "PENDING_UPLOAD",
+      "QUEUED"
+    ],
+    "transitions": {
+      "PENDING_UPLOAD": [
+        "QUEUED"
+      ],
+      "QUEUED": [
+        "INGESTING",
+        "BLOCKED_RIGHTS",
+        "FAILED"
+      ],
+      "INGESTING": [
+        "READY",
+        "BLOCKED_RIGHTS",
+        "FAILED"
+      ],
+      "READY": [],
+      "BLOCKED_RIGHTS": [
+        "QUEUED"
+      ],
+      "FAILED": []
+    }
+  },
+  "job": {
+    "enum": [
+      "queued",
+      "running",
+      "retrying",
+      "blocked-owner-action",
+      "failed-terminal",
+      "succeeded",
+      "cancelled"
+    ],
+    "creation": [
+      "queued"
+    ],
+    "transitions": {
+      "queued": [
+        "running",
+        "cancelled"
+      ],
+      "running": [
+        "succeeded",
+        "retrying",
+        "blocked-owner-action",
+        "failed-terminal",
+        "cancelled"
+      ],
+      "retrying": [
+        "queued",
+        "failed-terminal",
+        "cancelled"
+      ],
+      "blocked-owner-action": [
+        "queued",
+        "cancelled"
+      ],
+      "failed-terminal": [],
+      "succeeded": [],
+      "cancelled": []
+    }
+  },
+  "generation_run": {
+    "enum": [
+      "queued",
+      "running",
+      "retrying",
+      "blocked-owner-action",
+      "failed-terminal",
+      "succeeded",
+      "cancelled"
+    ],
+    "creation": [
+      "queued"
+    ],
+    "transitions": {
+      "queued": [
+        "running",
+        "cancelled"
+      ],
+      "running": [
+        "succeeded",
+        "retrying",
+        "blocked-owner-action",
+        "failed-terminal",
+        "cancelled"
+      ],
+      "retrying": [
+        "queued",
+        "failed-terminal",
+        "cancelled"
+      ],
+      "blocked-owner-action": [
+        "queued",
+        "cancelled"
+      ],
+      "failed-terminal": [],
+      "succeeded": [],
+      "cancelled": []
+    }
+  },
+  "transcript": {
+    "creation": [
+      "QUEUED"
+    ],
+    "enum": [
+      "QUEUED",
+      "RUNNING",
+      "SUCCEEDED",
+      "FAILED"
+    ],
+    "transitions": {
+      "QUEUED": [
+        "RUNNING",
+        "FAILED"
+      ],
+      "RUNNING": [
+        "SUCCEEDED",
+        "FAILED"
+      ],
+      "SUCCEEDED": [],
+      "FAILED": []
+    },
+    "retry": "new transcript row/version; no mutation of terminal attempt"
+  },
+  "experiment": {
+    "creation": [
+      "DRAFT"
+    ],
+    "enum": [
+      "DRAFT",
+      "RUNNING",
+      "STOPPED",
+      "COMPLETED",
+      "CANCELLED"
+    ],
+    "transitions": {
+      "DRAFT": [
+        "RUNNING",
+        "CANCELLED"
+      ],
+      "RUNNING": [
+        "STOPPED",
+        "COMPLETED",
+        "CANCELLED"
+      ],
+      "STOPPED": [
+        "COMPLETED"
+      ],
+      "COMPLETED": [],
+      "CANCELLED": []
+    }
+  },
+  "owner_action": {
+    "enum": [
+      "OPEN",
+      "RESOLVED",
+      "CANCELLED"
+    ],
+    "creation": [
+      "OPEN"
+    ],
+    "transitions": {
+      "OPEN": [
+        "RESOLVED",
+        "CANCELLED"
+      ],
+      "RESOLVED": [],
+      "CANCELLED": []
+    },
+    "db_time": "requested_at/created_at are DB-authored on INSERT; resolved_at is DB-authored on OPEN->RESOLVED; cancelled_at is DB-authored on OPEN->CANCELLED.",
+    "terminal_immutability": "RESOLVED/CANCELLED rows cannot reopen, change identity/context, resolution, resolution_sha256 or terminal timestamps.",
+    "resolution_hash": "resolution_sha256 = SHA-256 of canonical PostgreSQL jsonb text for the terminal resolution; OWNER_REVIEW proof artifacts bind this hash.",
+    "restriction_resolution": "RESTRICTION_COMPLIANCE is PRECOMMIT only and valid only for owner-resolvable NO_PROFANITY, BRAND_SAFE_ONLY or NO_MISLEADING_CLAIMS. It binds exact campaign/rule/candidate/restriction plus reserved target UUID, target_version and subject_sha256; the future target row need not exist at resolution.",
+    "precommit_consumption": "A resolved PRECOMMIT review grants nothing until an edit-plan/posting consumer matches target_id + target_version + subject_sha256 + campaign/rule/candidate/restriction exactly and proves owner resolved_at/evidence creation no later than the DB-authored target commit/revision time."
+  }
+}

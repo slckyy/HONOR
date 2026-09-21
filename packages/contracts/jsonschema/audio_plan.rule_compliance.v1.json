@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/audio_plan.rule_compliance.v1.json",
+  "title": "audio_plan.rule_compliance.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "x-honor-writer": "intelligence|media",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "rule_snapshot_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "rule_state": {
+      "type": "string",
+      "enum": [
+        "KNOWN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "render_safe_audio": {
+      "type": "string",
+      "enum": [
+        "ALLOWED",
+        "PROHIBITED",
+        "UNKNOWN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "music_allowed": {
+      "type": "string",
+      "enum": [
+        "ALLOWED",
+        "PROHIBITED",
+        "UNKNOWN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "sfx_allowed": {
+      "type": "string",
+      "enum": [
+        "ALLOWED",
+        "PROHIBITED",
+        "UNKNOWN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "max_sfx_density": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "NONE",
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "effective_density": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ]
+    },
+    "instructions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      },
+      "minItems": 0,
+      "maxItems": 20
+    },
+    "instructions_acknowledged": {
+      "type": "boolean"
+    },
+    "music_asset_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sfx_event_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 200
+    },
+    "compliant": {
+      "const": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rule_snapshot_id",
+    "rule_state",
+    "render_safe_audio",
+    "music_allowed",
+    "sfx_allowed",
+    "max_sfx_density",
+    "effective_density",
+    "instructions",
+    "instructions_acknowledged",
+    "music_asset_id",
+    "sfx_event_count",
+    "compliant"
+  ]
+}

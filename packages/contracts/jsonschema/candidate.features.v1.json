@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/candidate.features.v1.json",
+  "title": "candidate.features.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 600
+    },
+    "word_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "speech_ratio": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "silence_ratio": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "face_presence_ratio": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "context_independence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "hook_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "payoff_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "visual_energy_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "editability_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "rule_fit_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "novelty_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "active_speaker_confidence": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "start_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "end_ms": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "speaker_ids_or_labels": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "topic": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "hook_type": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "QUESTION",
+            "CLAIM",
+            "STORY",
+            "CONTRAST",
+            "SURPRISE",
+            "HOW_TO",
+            "LIST",
+            "REACTION",
+            "OTHER"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "overall_candidate_confidence": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "classification_model_version": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "duration_seconds",
+    "word_count",
+    "speech_ratio",
+    "silence_ratio",
+    "face_presence_ratio",
+    "context_independence_score",
+    "hook_score",
+    "payoff_score",
+    "visual_energy_score",
+    "editability_score",
+    "rule_fit_score",
+    "novelty_score",
+    "active_speaker_confidence",
+    "start_ms",
+    "end_ms",
+    "speaker_ids_or_labels",
+    "topic",
+    "hook_type",
+    "overall_candidate_confidence",
+    "classification_model_version"
+  ],
+  "x-honor-writer": "intelligence",
+  "description": "Committed candidate feature vector. Nullable speaker/topic/hook/confidence fields mean UNKNOWN; they must never be fabricated. Transcript identity is relational on candidates.transcript_id."
+}

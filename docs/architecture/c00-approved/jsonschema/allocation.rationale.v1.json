@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/allocation.rationale.v1.json",
+  "title": "allocation.rationale.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "economic_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "source_availability_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "account_health_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "historical_performance_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "information_value_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "uncertainty_penalty": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "cost_penalty": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "final_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "recommended_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 50
+    },
+    "estimated_cost_usd": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+      "description": "Exact non-negative USD decimal string with six fractional digits."
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "RULE_UNKNOWN",
+          "RIGHTS_UNKNOWN",
+          "ACCOUNT_PAUSED",
+          "BUDGET_GOVERNOR",
+          "DEADLINE_PASSED",
+          "NO_SOURCE"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 20,
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "economic_score",
+    "source_availability_score",
+    "account_health_score",
+    "historical_performance_score",
+    "information_value_score",
+    "uncertainty_penalty",
+    "cost_penalty",
+    "final_score",
+    "recommended_count",
+    "estimated_cost_usd",
+    "blocking_reasons"
+  ],
+  "x-honor-writer": "intelligence"
+}

@@ -1,0 +1,429 @@
+{
+  "schema_version": 1,
+  "rule_set_seal_cases": [
+    {
+      "name": "incomplete_rule_set_allocation",
+      "rule_count": 31,
+      "sealed": false,
+      "action": "allocation",
+      "expect": "REJECT"
+    },
+    {
+      "name": "sealed_32_allocation",
+      "rule_count": 32,
+      "sealed": true,
+      "seal_offset_s": -1,
+      "action": "allocation",
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "append_after_seal",
+      "sealed": true,
+      "operation": "INSERT_RULE",
+      "expect": "REJECT"
+    },
+    {
+      "name": "verification_after_decision",
+      "verified_offset_s": 1,
+      "seal_offset_s": -1,
+      "expect": "REJECT"
+    },
+    {
+      "name": "unsealed_historical_evidence",
+      "sealed": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "reactivate_superseded_snapshot",
+      "current_generation": 2,
+      "requested_generation": 1,
+      "expect": "REJECT"
+    }
+  ],
+  "action_time_cases": [
+    {
+      "name": "render_revoked_before_rendering",
+      "created_allowed": true,
+      "current_render_allowed": false,
+      "transition": "PLANNED->RENDERING",
+      "expect": "REJECT"
+    },
+    {
+      "name": "transcript_backdate_after_revocation",
+      "caller_offset_s": -3600,
+      "db_now_rights_allowed": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "edit_backdate_after_revocation",
+      "caller_offset_s": -3600,
+      "db_now_rights_allowed": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "audio_backdate_after_revocation",
+      "caller_offset_s": -3600,
+      "db_now_rights_allowed": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "allocation_historical_timestamp_bypass",
+      "caller_offset_s": -3600,
+      "db_now_rights_allowed": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "allocation_future_timestamp_bypass",
+      "caller_offset_s": 3600,
+      "db_now_rights_allowed": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "later_grant_no_retroactive_validation",
+      "action_before_grant": true,
+      "expect": "REJECT"
+    }
+  ],
+  "audio_rule_cases": [
+    {
+      "name": "music_prohibited_with_asset",
+      "render_safe_audio": "ALLOWED",
+      "music_allowed": "PROHIBITED",
+      "music_asset": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "music_unknown_with_asset",
+      "render_safe_audio": "ALLOWED",
+      "music_allowed": "UNKNOWN",
+      "music_asset": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "music_allowed",
+      "render_safe_audio": "ALLOWED",
+      "music_allowed": "ALLOWED",
+      "music_asset": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "sfx_prohibited_nonempty",
+      "sfx_allowed": "PROHIBITED",
+      "sfx_events": 1,
+      "density": "LOW",
+      "max": "HIGH",
+      "expect": "REJECT"
+    },
+    {
+      "name": "sfx_unknown_nonempty",
+      "sfx_allowed": "UNKNOWN",
+      "sfx_events": 1,
+      "density": "LOW",
+      "max": "HIGH",
+      "expect": "REJECT"
+    },
+    {
+      "name": "sfx_none_density",
+      "sfx_allowed": "ALLOWED",
+      "sfx_events": 0,
+      "density": "NONE",
+      "max": "NONE",
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "density_exceeds_max",
+      "sfx_allowed": "ALLOWED",
+      "sfx_events": 2,
+      "density": "HIGH",
+      "max": "LOW",
+      "expect": "REJECT"
+    },
+    {
+      "name": "master_prohibited_class_explicit_music_allow",
+      "render_safe_audio": "PROHIBITED",
+      "music_allowed": "ALLOWED",
+      "sfx_allowed": "PROHIBITED",
+      "music_asset": true,
+      "sfx_events": 0,
+      "density": "NONE",
+      "max": "NONE",
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "master_unknown_no_assets",
+      "render_safe_audio": "UNKNOWN",
+      "music_allowed": "UNKNOWN",
+      "sfx_allowed": "UNKNOWN",
+      "music_asset": false,
+      "sfx_events": 0,
+      "density": "NONE",
+      "max": "NONE",
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "outer_not_applicable_render_safe_default",
+      "outer_state": "NOT_APPLICABLE",
+      "music_asset": true,
+      "asset_render_safe": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "outer_not_applicable_non_render_safe_asset",
+      "outer_state": "NOT_APPLICABLE",
+      "music_asset": true,
+      "asset_render_safe": false,
+      "expect": "REJECT"
+    }
+  ],
+  "disclosure_cases": [
+    {
+      "placement": "CAPTION",
+      "caption": true,
+      "video": false,
+      "submission": false,
+      "expect": "ACCEPT"
+    },
+    {
+      "placement": "CAPTION",
+      "caption": false,
+      "video": false,
+      "submission": false,
+      "expect": "REJECT"
+    },
+    {
+      "placement": "VIDEO",
+      "caption": false,
+      "video": true,
+      "submission": false,
+      "expect": "ACCEPT"
+    },
+    {
+      "placement": "VIDEO",
+      "caption": true,
+      "video": false,
+      "submission": false,
+      "expect": "REJECT"
+    },
+    {
+      "placement": "BOTH",
+      "caption": true,
+      "video": true,
+      "submission": false,
+      "expect": "ACCEPT"
+    },
+    {
+      "placement": "BOTH",
+      "caption": true,
+      "video": false,
+      "submission": false,
+      "expect": "REJECT"
+    },
+    {
+      "placement": "PROVIDER_SUBMISSION",
+      "caption": false,
+      "video": false,
+      "submission": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "placement": "PROVIDER_SUBMISSION",
+      "caption": false,
+      "video": false,
+      "submission": false,
+      "expect": "REJECT"
+    }
+  ],
+  "deadline_cases": [
+    {
+      "state": "KNOWN",
+      "campaign": "2026-09-22T23:59:00Z",
+      "posting": "2026-09-22T23:59:00Z",
+      "expect": "ACCEPT"
+    },
+    {
+      "state": "KNOWN",
+      "campaign": "2026-09-22T23:59:00Z",
+      "posting": "2026-09-23T23:59:00Z",
+      "expect": "REJECT"
+    },
+    {
+      "state": "NOT_APPLICABLE",
+      "campaign": null,
+      "posting": null,
+      "expect": "ACCEPT"
+    },
+    {
+      "state": "NOT_APPLICABLE",
+      "campaign": null,
+      "posting": "2026-09-23T23:59:00Z",
+      "expect": "REJECT"
+    },
+    {
+      "state": "UNKNOWN",
+      "campaign": null,
+      "posting": null,
+      "expect": "BLOCKED"
+    }
+  ],
+  "experiment_cases": [
+    {
+      "name": "start_with_one_arm",
+      "status": "DRAFT",
+      "arms": 1,
+      "controls": 1,
+      "transition": "RUNNING",
+      "expect": "REJECT"
+    },
+    {
+      "name": "start_with_two_one_control",
+      "status": "DRAFT",
+      "arms": 2,
+      "controls": 1,
+      "transition": "RUNNING",
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "add_arm_after_running",
+      "status": "RUNNING",
+      "operation": "ARM_INSERT",
+      "expect": "REJECT"
+    },
+    {
+      "name": "change_hypothesis_running",
+      "status": "RUNNING",
+      "operation": "DESIGN_UPDATE",
+      "expect": "REJECT"
+    },
+    {
+      "name": "assignment_draft",
+      "status": "DRAFT",
+      "operation": "ASSIGN",
+      "expect": "REJECT"
+    },
+    {
+      "name": "assignment_running",
+      "status": "RUNNING",
+      "operation": "ASSIGN",
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "assignment_completed",
+      "status": "COMPLETED",
+      "operation": "ASSIGN",
+      "expect": "REJECT"
+    },
+    {
+      "name": "exposure_before_assignment",
+      "assigned_offset_s": 0,
+      "exposed_offset_s": -1,
+      "expect": "REJECT"
+    },
+    {
+      "name": "exposure_after_assignment",
+      "assigned_offset_s": 0,
+      "exposed_offset_s": 1,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "mutate_design_on_start_transition",
+      "status": "DRAFT",
+      "operation": "DESIGN_UPDATE_AND_START",
+      "expect": "REJECT"
+    },
+    {
+      "name": "assignment_unit_type_mismatch",
+      "status": "RUNNING",
+      "operation": "ASSIGN_WRONG_UNIT_TYPE",
+      "expect": "REJECT"
+    },
+    {
+      "name": "stopped_to_completed_preserves_ended_at",
+      "status": "STOPPED",
+      "operation": "COMPLETE",
+      "expect": "PRESERVE_ENDED_AT"
+    }
+  ],
+  "experiment_scope_cases": [
+    {
+      "ref": "candidate",
+      "assignment_type": "GENERATION_RUN",
+      "unit_match": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "ref": "candidate",
+      "assignment_type": "SOCIAL_ACCOUNT",
+      "unit_match": true,
+      "expect": "REJECT"
+    },
+    {
+      "ref": "candidate",
+      "assignment_type": "GENERATION_RUN",
+      "unit_match": false,
+      "expect": "REJECT"
+    },
+    {
+      "ref": "allocation",
+      "experiment_type": "GENERATION_RUN",
+      "assignment_type": "GENERATION_RUN",
+      "unit_match": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "ref": "allocation",
+      "experiment_type": "SOCIAL_ACCOUNT",
+      "assignment_type": "SOCIAL_ACCOUNT",
+      "unit_match": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "ref": "allocation",
+      "experiment_type": "CLIP",
+      "assignment_type": "CLIP",
+      "unit_match": true,
+      "expect": "REJECT"
+    },
+    {
+      "ref": "clip",
+      "experiment_type": "CLIP",
+      "assignment_type": "CLIP",
+      "unit_match": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "ref": "clip",
+      "experiment_type": "GENERATION_RUN",
+      "assignment_type": "GENERATION_RUN",
+      "unit_match": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "ref": "clip",
+      "experiment_type": "SOCIAL_ACCOUNT",
+      "assignment_type": "SOCIAL_ACCOUNT",
+      "unit_match": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "ref": "clip",
+      "experiment_type": "CLIP",
+      "assignment_type": "CLIP",
+      "unit_match": false,
+      "expect": "REJECT"
+    }
+  ],
+  "restriction_edge_cases": [
+    {
+      "name": "no_third_party_public_domain_origin",
+      "code": "NO_THIRD_PARTY_SOURCE",
+      "origin_type": "PUBLIC_DOMAIN",
+      "expect": "REJECT"
+    },
+    {
+      "name": "no_third_party_owner_owned_origin",
+      "code": "NO_THIRD_PARTY_SOURCE",
+      "origin_type": "OWNER_OWNED",
+      "expect": "ACCEPT"
+    }
+  ]
+}

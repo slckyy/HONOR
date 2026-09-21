@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "currency": "USD",
+  "thresholds": {
+    "optional_pause_usd": "43.000000",
+    "reserve_mode_usd": "51.030000",
+    "hard_cap_usd": "56.030000"
+  },
+  "state_rules": [
+    {
+      "state": "NORMAL",
+      "min_inclusive": "0.000000",
+      "max_exclusive": "43.000000",
+      "admission": "core_and_optional_if_each_job_reservation_fits"
+    },
+    {
+      "state": "OPTIONAL_PAUSED",
+      "min_inclusive": "43.000000",
+      "max_exclusive": "51.030000",
+      "admission": "no_new_optional_paid_work; core_required_only_if_post_admission_exposure_remains_below_51.030000"
+    },
+    {
+      "state": "RESERVE",
+      "min_inclusive": "51.030000",
+      "max_exclusive": "56.030000",
+      "admission": "emergency_recovery_security_reconciliation_only_if_post_admission_exposure_remains_below_56.030000"
+    },
+    {
+      "state": "HARD_STOP",
+      "min_inclusive": "56.030000",
+      "max_exclusive": null,
+      "admission": "no_new_paid_work"
+    }
+  ],
+  "exposure_formula": {
+    "name": "governor_exposure_usd",
+    "formula": "cash_spend_counted_usd + unpaid_committed_usd + admitted_queued_unfunded_usd",
+    "cash_spend_counted_usd": "Irreversible Month-1 provider cash charges/purchases, including the full face value of prepaid funding purchased in Month 1.",
+    "unpaid_committed_usd": "Conservative cost already contractually/operationally committed but not yet included in cash_spend_counted_usd.",
+    "admitted_queued_unfunded_usd": "Conservative maximum incremental cost of admitted/queued paid work not already represented in cash or commitments, reduced only by remaining prepaid credit whose original purchase is already counted in cash_spend_counted_usd.",
+    "prepaid_rule": "Count a prepaid funding purchase in full at purchase time. Usage consuming that already-counted credit does not add exposure a second time. If admitted/queued work exceeds remaining already-counted prepaid credit, only the excess is added as admitted_queued_unfunded_usd. Refunds reduce cash_spend_counted_usd only after provider-confirmed settlement evidence exists.",
+    "reporting_lag_rule": "Admission uses HONOR reservations before dispatch; provider usage/invoice lag can never reduce or postpone the reservation. Reconciliation replaces estimates without releasing exposure below known irreversible cash/commitments.",
+    "calculation_order": [
+      "1. Sum irreversible Month-1 cash charges/purchases into cash_spend_counted_usd, including full face value of prepaid funding at purchase time.",
+      "2. Sum unavoidable but not-yet-cash obligations into unpaid_committed_usd, excluding anything already counted as cash.",
+      "3. Reserve every admitted/queued paid job before dispatch at a conservative maximum incremental cost.",
+      "4. Offset queued reservations only by remaining prepaid credit whose original purchase is already present in cash_spend_counted_usd; put only the excess into admitted_queued_unfunded_usd.",
+      "5. governor_exposure_usd = cash_spend_counted_usd + unpaid_committed_usd + admitted_queued_unfunded_usd. Use exact Decimal arithmetic; never binary floating point for admission.",
+      "6. Evaluate the post-admission exposure before any paid job/call/purchase is dispatched."
+    ],
+    "admission_rule": "A proposed paid action is classified CORE_REQUIRED, OPTIONAL, or EMERGENCY_ALLOWED. OPTIONAL is admitted only when both current and post-admission exposure are <43.000000. CORE_REQUIRED is admitted only when post-admission exposure is <51.030000. EMERGENCY_ALLOWED is admitted in RESERVE only when its purpose is recovery/security/reconciliation and post-admission exposure is <56.030000. At exposure >=56.030000 no paid action is admitted.",
+    "prepaid_purchase_cap_rule": "Purchasing prepaid credit itself is a paid purchase and must pass the same post-admission governor test. The full purchase face value is counted immediately in cash_spend_counted_usd. Consuming already-counted credit later changes economic usage records but does not add governor cash exposure again.",
+    "provider_reporting_lag": "HONOR reservations are authoritative for admission until reconciled. Missing/delayed provider usage cannot lower exposure. Reconciliation may replace an estimate with actual evidence but cannot remove irreversible cash or unavoidable commitments."
+  },
+  "boundary_tests": [
+    {
+      "exposure_usd": "42.990000",
+      "state": "NORMAL"
+    },
+    {
+      "exposure_usd": "43.000000",
+      "state": "OPTIONAL_PAUSED"
+    },
+    {
+      "exposure_usd": "43.010000",
+      "state": "OPTIONAL_PAUSED"
+    },
+    {
+      "exposure_usd": "51.020000",
+      "state": "OPTIONAL_PAUSED"
+    },
+    {
+      "exposure_usd": "51.030000",
+      "state": "RESERVE"
+    },
+    {
+      "exposure_usd": "56.020000",
+      "state": "RESERVE"
+    },
+    {
+      "exposure_usd": "56.030000",
+      "state": "HARD_STOP"
+    }
+  ],
+  "admission_examples": {
+    "optional_at_42_99_cost_0_005": "ADMIT only if post-admission exposure remains <43.000000",
+    "optional_at_43_00": "BLOCK_OR_POSTPONE",
+    "core_at_51_02_cost_0_005": "ADMIT if post-admission exposure remains <51.030000",
+    "core_at_51_02_cost_0_020": "BLOCK unless reclassified as permitted emergency/recovery/security/reconciliation",
+    "emergency_at_56_02_cost_0_005": "ADMIT if post-admission exposure remains <56.030000",
+    "any_paid_at_56_03": "BLOCK"
+  }
+}

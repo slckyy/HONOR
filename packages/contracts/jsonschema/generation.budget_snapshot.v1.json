@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/generation.budget_snapshot.v1.json",
+  "title": "generation.budget_snapshot.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "as_of": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "governor_exposure_usd": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+      "description": "Exact non-negative USD decimal string with six fractional digits."
+    },
+    "governor_state": {
+      "type": "string",
+      "enum": [
+        "NORMAL",
+        "OPTIONAL_PAUSED",
+        "RESERVE",
+        "HARD_STOP"
+      ]
+    },
+    "optional_pause_usd": {
+      "const": "43.000000"
+    },
+    "reserve_mode_usd": {
+      "const": "51.030000"
+    },
+    "hard_cap_usd": {
+      "const": "56.030000"
+    },
+    "remaining_hard_cap_usd": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+      "description": "Exact USD decimal string with six fractional digits; never a JSON number."
+    },
+    "run_max_admissible_incremental_cost_usd": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$",
+      "description": "Exact non-negative USD decimal string with six fractional digits."
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "as_of",
+    "governor_exposure_usd",
+    "governor_state",
+    "optional_pause_usd",
+    "reserve_mode_usd",
+    "hard_cap_usd",
+    "remaining_hard_cap_usd",
+    "run_max_admissible_incremental_cost_usd"
+  ],
+  "x-honor-writer": "api"
+}

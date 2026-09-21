@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/polli.fact_labels.v1.json",
+  "title": "polli.fact_labels.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "claim_index": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 999
+      },
+      "truth_label": {
+        "type": "string",
+        "enum": [
+          "FACT",
+          "ESTIMATE",
+          "MODEL_ANALYSIS",
+          "UNKNOWN"
+        ]
+      },
+      "source_refs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "minItems": 0,
+        "maxItems": 100
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "claim_index",
+      "truth_label",
+      "source_refs"
+    ]
+  },
+  "minItems": 0,
+  "maxItems": 1000,
+  "x-honor-writer": "api|polli"
+}

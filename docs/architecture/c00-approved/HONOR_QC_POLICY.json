@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "artifact": "HONOR_QC_POLICY",
+  "overall_pass_rule": "DB derives passed=true iff every canonical check is PASS or a policy-permitted NOT_APPLICABLE; FAIL and WARN always prevent PASS. Caller hard_gate is not authoritative and V1 requires hard_gate=true for every canonical check.",
+  "failure_evidence_rule": "FAIL or WARN requires non-null reason_code and non-empty detail; PASS may omit both. NOT_APPLICABLE must satisfy the exact applicability predicate.",
+  "checks": {
+    "video_decode": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "audio_decode": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "dimensions_aspect": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "duration": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "black_frozen_frames": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "audio_presence": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "loudness_peak": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "caption_safe_bounds": {
+      "always_hard_gate": true,
+      "applicability": "CONDITIONAL",
+      "not_applicable_permitted": true,
+      "not_applicable_condition": "Allowed only when edit_plan.captions.enabled=false and disclosure_render.overlay_events is empty.",
+      "overall_pass_statuses": [
+        "PASS",
+        "NOT_APPLICABLE"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "face_crop": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "caption_overlap": {
+      "always_hard_gate": true,
+      "applicability": "CONDITIONAL",
+      "not_applicable_permitted": true,
+      "not_applicable_condition": "Allowed only when edit_plan.captions.enabled=false and disclosure_render.overlay_events is empty.",
+      "overall_pass_statuses": [
+        "PASS",
+        "NOT_APPLICABLE"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "cut_frequency": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "assets_present": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "watermark_absent": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "uniqueness": {
+      "always_hard_gate": true,
+      "applicability": "CONDITIONAL",
+      "not_applicable_permitted": true,
+      "not_applicable_condition": "Allowed only when the sealed uniqueness_rules contains no NO_REUSED_EDIT, UNIQUE_PER_ACCOUNT or UNIQUE_PER_CAMPAIGN clause.",
+      "overall_pass_statuses": [
+        "PASS",
+        "NOT_APPLICABLE"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "rules_rights_metadata": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "output_size": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "sha256_recorded": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "campaign_restrictions": {
+      "always_hard_gate": true,
+      "applicability": "ALWAYS",
+      "not_applicable_permitted": false,
+      "not_applicable_condition": null,
+      "overall_pass_statuses": [
+        "PASS"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "disclosure_video": {
+      "always_hard_gate": true,
+      "applicability": "CONDITIONAL",
+      "not_applicable_permitted": true,
+      "not_applicable_condition": "Allowed only when disclosure_requirements is NOT_APPLICABLE or does not require VIDEO/BOTH.",
+      "overall_pass_statuses": [
+        "PASS",
+        "NOT_APPLICABLE"
+      ],
+      "ready_forbidden_on_fail_or_warn": true
+    },
+    "render_audio_compliance": {
+      "always_hard_gate": true,
+      "applicability": "CONDITIONAL",
+      "not_applicable_permitted": true,
+      "not_applicable_condition": "Allowed only when clip.audio_plan_id is null AND sealed render_audio_rules.knowledge_state=NOT_APPLICABLE. The manifest must still be internally truthful: null audio identity, empty render_safe_assets, clip rule snapshot match, planned_music_asset_id=null and planned_sfx_asset_ids=[]. A KNOWN render-audio rule requires PASS even for deliberate silent/no-extra-audio; UNKNOWN blocks.",
+      "overall_pass_statuses": [
+        "PASS",
+        "NOT_APPLICABLE"
+      ],
+      "ready_forbidden_on_fail_or_warn": true,
+      "ready_forbidden_when": "FAIL/WARN, illegal NOT_APPLICABLE, any embedded render-safe asset without exact committed audio plan, any baked asset failing current HONOR_AUDIO_ASSET_RIGHTS_CONTRACT.json eligibility, manifest UUID/kind/SHA/license mismatch, UNKNOWN render_audio_rules, or unresolved/material render-audio instruction.",
+      "round11_manifest_evidence": "For non-null plans, QC/manifest admission verifies each baked asset exactly matches immutable audio_assets id/kind/sha256/license_url_or_reference, committed-plan membership and current eligibility."
+    }
+  },
+  "null_audio_plan_contract": {
+    "manifest": "audio_plan_id/hash/version/schema_version must be null and render_safe_assets must be empty",
+    "qc_not_applicable": "Only legal when sealed render_audio_rules knowledge_state is NOT_APPLICABLE. KNOWN requires PASS; UNKNOWN blocks; actual embedded MUSIC/SFX is always forbidden without an exact audio plan.",
+    "operational_instruction": "A KNOWN material render-audio instruction requires explicit PASS evidence even for a silent/no-extra-audio render; it is not automatically N/A."
+  }
+}

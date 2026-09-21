@@ -1,0 +1,76 @@
+HONOR/
+├── apps/
+│   └── web/
+│       ├── app/
+│       ├── components/
+│       ├── public/
+│       ├── lib/
+│       └── tests/
+├── services/
+│   ├── api/
+│   │   ├── honor_api/
+│   │   ├── tests/
+│   │   └── Dockerfile
+│   ├── worker/
+│   │   ├── honor_worker/
+│   │   ├── tests/
+│   │   └── Dockerfile
+│   ├── intelligence/
+│   │   ├── honor_intelligence/
+│   │   └── tests/
+│   └── media/
+│       ├── honor_media/
+│       ├── assets/
+│       │   └── README.md
+│       └── tests/
+├── packages/
+│   ├── contracts/
+│   │   ├── openapi/
+│   │   ├── jsonschema/
+│   │   ├── events/
+│   │   ├── polli-tools/
+│   │   └── generated/
+│   └── design-system/
+│       ├── src/
+│       └── tests/
+├── infrastructure/
+│   ├── docker/
+│   │   ├── Caddyfile
+│   │   ├── compose.production.yml
+│   │   └── compose.development.yml
+│   ├── migrations/
+│   │   └── README.md
+│   ├── deployment/
+│   │   ├── scripts/
+│   │   ├── systemd/
+│   │   └── runbooks/
+│   ├── backup/
+│   └── monitoring/
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── contract/
+│   └── e2e/
+├── docs/
+│   ├── architecture/
+│   ├── operations/
+│   ├── security/
+│   └── decisions/
+├── .github/
+│   └── workflows/
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+├── README.md
+└── AGENTS.md
+
+FROZEN RULES
+- One canonical PRIVATE GitHub repository only.
+- Do not add top-level apps/services/packages that duplicate existing responsibilities without approved CHANGE REQUEST.
+- Database migrations live under infrastructure/migrations and are append-only after release.
+- Shared contracts are generated from packages/contracts; do not hand-fork API/event/tool types per service.
+- Commercial/font/media binaries are not committed unless license explicitly allows repository redistribution.
+- Large source/generated media is never committed to Git.
+
+# C00 frozen V1 JSON Schemas are copied verbatim from handoff/jsonschema/ into:
+packages/contracts/jsonschema/

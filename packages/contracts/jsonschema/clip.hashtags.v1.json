@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/clip.hashtags.v1.json",
+  "title": "clip.hashtags.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "array",
+  "items": {
+    "type": "string",
+    "pattern": "^#[^\\s#]{1,99}$"
+  },
+  "minItems": 0,
+  "maxItems": 30,
+  "uniqueItems": true,
+  "x-honor-writer": "api|intelligence"
+}

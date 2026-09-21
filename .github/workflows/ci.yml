@@ -41,11 +41,14 @@ jobs:
           python -m pip install --disable-pip-version-check uv==0.10.0
       - name: Re-resolve Python graph against frozen pins
         run: |
-          uv pip compile pyproject.toml --extra dev --python-version 3.13             --python-platform x86_64-unknown-linux-gnu --constraint requirements.lock             --no-header --no-annotate --output-file /tmp/requirements.regenerated.lock
+          uv pip compile pyproject.toml --extra dev --python-version 3.13 \
+            --python-platform x86_64-unknown-linux-gnu --constraint requirements.lock \
+            --no-header --no-annotate --output-file /tmp/requirements.regenerated.lock
           python scripts/compare_python_lock.py requirements.lock /tmp/requirements.regenerated.lock
       - name: Start authenticated Redis
         run: |
-          docker run -d --name honor-redis-ci -p 6379:6379 redis:8.10.1             redis-server --protected-mode yes --appendonly no --requirepass "$REDIS_PASSWORD"
+          docker run -d --name honor-redis-ci -p 6379:6379 redis:8.10.1 \
+            redis-server --protected-mode yes --appendonly no --requirepass "$REDIS_PASSWORD"
           for i in $(seq 1 20); do
             if docker exec honor-redis-ci redis-cli -a "$REDIS_PASSWORD" ping 2>/dev/null | grep -q PONG; then exit 0; fi
             sleep 1
@@ -56,7 +59,10 @@ jobs:
         env:
           PYTHONPATH: services/worker
         run: |
-          nohup python -m celery -A honor_worker.celery_app:app worker             --loglevel=WARNING --pool=solo --queues=foundation --concurrency=1             --pidfile=/tmp/honor-celery.pid --logfile=/tmp/honor-celery.log             >/tmp/honor-celery-launch.log 2>&1 &
+          nohup python -m celery -A honor_worker.celery_app:app worker \
+            --loglevel=WARNING --pool=solo --queues=foundation --concurrency=1 \
+            --pidfile=/tmp/honor-celery.pid --logfile=/tmp/honor-celery.log \
+            >/tmp/honor-celery-launch.log 2>&1 &
           for i in $(seq 1 30); do
             if python -m celery -A honor_worker.celery_app:app inspect ping --timeout=1 2>/dev/null | grep -q pong; then exit 0; fi
             sleep 1
@@ -68,6 +74,7 @@ jobs:
         run: |
           python scripts/static_acceptance.py
           python scripts/check_lockfiles.py
+          python scripts/check_c01_manifest.py
       - name: Python unit and integration tests
         run: python -m pytest -q -rs
       - name: Node dependencies from frozen lock

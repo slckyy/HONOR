@@ -1,0 +1,10 @@
+[Unit]
+Description=HONOR encrypted backup
+[Service]
+Type=oneshot
+EnvironmentFile=/opt/honor/secrets/backup.env
+ExecStart=/opt/honor/current/infrastructure/backup/backup.sh
+User=honor
+Group=honor
+NoNewPrivileges=true
+PrivateTmp=true

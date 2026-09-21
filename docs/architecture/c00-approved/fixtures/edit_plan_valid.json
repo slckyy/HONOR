@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "plan_version": 1,
+  "candidate_id": "44444444-4444-4444-8444-444444444444",
+  "source_asset_id": "55555555-5555-4555-8555-555555555555",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "campaign_rule_snapshot_ids": [
+    "66666666-6666-4666-8666-666666666666"
+  ],
+  "source_rights_id": "77777777-7777-4777-8777-777777777777",
+  "source_rights_record_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "supersedes_edit_plan_id": null,
+  "plan_fingerprint_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "fingerprint_rule": "SHA256_RFC8785_CANONICAL_JSON_EXCLUDING_plan_fingerprint_sha256",
+  "timeline": {
+    "timing_guard": "WORD_OR_PHONEME_BOUNDARY_WHEN_TIMING_AVAILABLE",
+    "cuts": [
+      {
+        "cut_id": "c1",
+        "source_start_ms": 0,
+        "source_end_ms": 10000,
+        "output_start_ms": 0,
+        "output_end_ms": 10000,
+        "reason": "HOOK",
+        "boundary_alignment": "WORD_BOUNDARY",
+        "source_word_start_id": "w1",
+        "source_word_end_id": "w50",
+        "transition": {
+          "type": "CUT",
+          "duration_ms": 0
+        },
+        "playback_rate": 1.0
+      }
+    ],
+    "dead_air_decisions": []
+  },
+  "layout": {
+    "safe_frame": {
+      "left": 0.05,
+      "right": 0.05,
+      "top": 0.12,
+      "bottom": 0.18
+    },
+    "events": [
+      {
+        "start_ms": 0,
+        "end_ms": 10000,
+        "mode": "ACTIVE_SPEAKER",
+        "speaker_ids": [
+          "s1"
+        ],
+        "center_x": 0.5,
+        "center_y": 0.5,
+        "scale": 1.1,
+        "pan_x": 0,
+        "pan_y": 0,
+        "confidence": 0.95
+      }
+    ],
+    "speaker_switches": [],
+    "punch_ins": [],
+    "reframing_mode": "CROP_ALLOWED"
+  },
+  "captions": {
+    "style_ref": "honor.caption.gold.v1",
+    "timing_mode": "PHRASE",
+    "safe_placement": true,
+    "max_lines": 2,
+    "chunks": [
+      {
+        "start_ms": 0,
+        "end_ms": 2000,
+        "text": "Example caption",
+        "emphasis_tokens": [
+          "Example"
+        ]
+      }
+    ],
+    "enabled": true
+  },
+  "visual_emphasis": [],
+  "audio_cleanup": {
+    "dialogue_normalization": true,
+    "target_integrated_lufs": -15,
+    "true_peak_ceiling_dbtp": -1.0,
+    "noise_handling": "LIGHT",
+    "limiter_enabled": true,
+    "preserve_natural_dynamics": true
+  },
+  "audio_plan_reference": {
+    "audio_plan_required": true,
+    "audio_plan_id": "88888888-8888-4888-8888-888888888888",
+    "separation_rule": "RENDER_SAFE_AUDIO_SEPARATE_FROM_PLATFORM_NATIVE_RECOMMENDATION"
+  },
+  "output": {
+    "canvas_width": 1080,
+    "canvas_height": 1920,
+    "aspect_ratio": "9:16",
+    "fps": 30,
+    "target_codec": "H264",
+    "uniqueness_inputs": [
+      "candidate:44444444-4444-4444-8444-444444444444"
+    ],
+    "render_manifest_schema_id": "render_manifest.v1",
+    "renderer_must_record_plan_hash": true,
+    "watermark": false,
+    "render_manifest_id": "99999999-9999-4999-8999-999999999999",
+    "expected_duration_ms": 10000,
+    "edit_signature_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "rule_compliance": {
+    "rule_snapshot_id": "66666666-6666-4666-8666-666666666666",
+    "evaluated_keys": [
+      "source_material_restrictions",
+      "clip_length_min_seconds",
+      "clip_length_max_seconds",
+      "content_restrictions",
+      "editing_restrictions",
+      "uniqueness_rules",
+      "render_audio_rules"
+    ],
+    "blocked_unknown_keys": [],
+    "effective_min_clip_seconds": null,
+    "effective_max_clip_seconds": null
+  },
+  "disclosure_render": {
+    "required": false,
+    "placement": null,
+    "text": null,
+    "instructions": [],
+    "overlay_events": []
+  },
+  "restriction_compliance": []
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "account_performance",
+    "read_only": true,
+    "scope": "owner:performance:read"
+  },
+  {
+    "name": "allocation_analysis",
+    "read_only": true,
+    "scope": "owner:analysis:read"
+  },
+  {
+    "name": "audio_feature_performance",
+    "read_only": true,
+    "scope": "owner:analysis:read"
+  },
+  {
+    "name": "campaign_performance",
+    "read_only": true,
+    "scope": "owner:performance:read"
+  },
+  {
+    "name": "clip_status",
+    "read_only": true,
+    "scope": "owner:clips:read"
+  },
+  {
+    "name": "cost_summary",
+    "read_only": true,
+    "scope": "owner:costs:read"
+  },
+  {
+    "name": "due_actions",
+    "read_only": true,
+    "scope": "owner:operations:read"
+  },
+  {
+    "name": "edit_feature_performance",
+    "read_only": true,
+    "scope": "owner:analysis:read"
+  },
+  {
+    "name": "fact_evidence",
+    "read_only": true,
+    "scope": "owner:evidence:read"
+  },
+  {
+    "name": "finance_summary",
+    "read_only": true,
+    "scope": "owner:finance:read"
+  },
+  {
+    "name": "generation_run_status",
+    "read_only": true,
+    "scope": "owner:generation:read"
+  },
+  {
+    "name": "target_progress",
+    "read_only": true,
+    "scope": "owner:finance:read"
+  }
+]

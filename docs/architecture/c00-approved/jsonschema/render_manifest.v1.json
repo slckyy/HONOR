@@ -1,0 +1,484 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/render_manifest.v1.json",
+  "title": "render_manifest.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "x-honor-writer": "media",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "render_manifest_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "clip_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source_asset_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "edit_plan_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "edit_plan_schema_version": {
+      "const": 1
+    },
+    "edit_plan_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "edit_plan_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "audio_plan_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "audio_plan_schema_version": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "const": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "audio_plan_version": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "audio_plan_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "render_safe_assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "audio_asset_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "license_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "MUSIC",
+              "SFX"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "audio_asset_id",
+          "sha256",
+          "license_reference",
+          "kind"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 100
+    },
+    "renderer": {
+      "type": "object",
+      "properties": {
+        "honor_media_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "ffmpeg_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "opencv_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "container_image_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "honor_media_version",
+        "ffmpeg_version",
+        "opencv_version",
+        "container_image_digest"
+      ]
+    },
+    "material_render_parameters": {
+      "type": "object",
+      "properties": {
+        "canvas_width": {
+          "const": 1080
+        },
+        "canvas_height": {
+          "const": 1920
+        },
+        "fps": {
+          "type": "integer",
+          "enum": [
+            30,
+            60
+          ]
+        },
+        "video_codec": {
+          "const": "H264"
+        },
+        "audio_codec": {
+          "type": "string",
+          "enum": [
+            "AAC"
+          ]
+        },
+        "pixel_format": {
+          "type": "string",
+          "enum": [
+            "yuv420p"
+          ]
+        },
+        "target_integrated_lufs": {
+          "type": "number",
+          "minimum": -24,
+          "maximum": -10
+        },
+        "true_peak_ceiling_dbtp": {
+          "type": "number",
+          "minimum": -6,
+          "maximum": -0.1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "canvas_width",
+        "canvas_height",
+        "fps",
+        "video_codec",
+        "audio_codec",
+        "pixel_format",
+        "target_integrated_lufs",
+        "true_peak_ceiling_dbtp"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "object_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "file_size_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "object_key",
+        "sha256",
+        "file_size_bytes",
+        "duration_ms"
+      ]
+    },
+    "qc_run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "qc_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "qc_passed": {
+      "const": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "manifest_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "manifest_hash_rule": {
+      "const": "SHA256_RFC8785_CANONICAL_JSON_EXCLUDING_manifest_hash"
+    },
+    "audio_rule_compliance": {
+      "type": "object",
+      "properties": {
+        "rule_snapshot_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "planned_music_asset_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "planned_sfx_asset_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true,
+          "minItems": 0,
+          "maxItems": 200
+        },
+        "instructions_acknowledged": {
+          "type": "boolean"
+        },
+        "verified_exact_asset_match": {
+          "const": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "rule_snapshot_id",
+        "planned_music_asset_id",
+        "planned_sfx_asset_ids",
+        "instructions_acknowledged",
+        "verified_exact_asset_match"
+      ]
+    },
+    "campaign_disclosure": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "placement": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "CAPTION",
+                "VIDEO",
+                "BOTH",
+                "PROVIDER_SUBMISSION"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rendered_in_video": {
+          "type": "boolean"
+        },
+        "text_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "placement",
+        "rendered_in_video",
+        "text_sha256"
+      ]
+    },
+    "campaign_rule_snapshot_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Exact sole sealed campaign rule snapshot shared by edit plan, audio plan (if any), clip and posting recommendation."
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "render_manifest_id",
+    "clip_id",
+    "source_asset_id",
+    "source_sha256",
+    "edit_plan_id",
+    "edit_plan_schema_version",
+    "edit_plan_version",
+    "edit_plan_hash",
+    "audio_plan_id",
+    "audio_plan_schema_version",
+    "audio_plan_version",
+    "audio_plan_hash",
+    "campaign_rule_snapshot_id",
+    "render_safe_assets",
+    "renderer",
+    "material_render_parameters",
+    "output",
+    "qc_run_id",
+    "qc_version",
+    "qc_passed",
+    "created_at",
+    "manifest_hash",
+    "manifest_hash_rule",
+    "audio_rule_compliance",
+    "campaign_disclosure"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "audio_plan_id": {
+            "type": "null"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "audio_plan_schema_version": {
+            "type": "null"
+          },
+          "audio_plan_version": {
+            "type": "null"
+          },
+          "audio_plan_hash": {
+            "type": "null"
+          },
+          "audio_rule_compliance": {
+            "type": "object",
+            "properties": {
+              "planned_music_asset_id": {
+                "type": "null"
+              },
+              "planned_sfx_asset_ids": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "verified_exact_asset_match": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "audio_plan_schema_version": {
+            "type": "integer",
+            "const": 1
+          },
+          "audio_plan_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "audio_plan_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "audio_plan_id": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "audio_plan_id"
+        ]
+      },
+      "then": {
+        "properties": {
+          "audio_plan_hash": {
+            "type": "null"
+          },
+          "audio_plan_version": {
+            "type": "null"
+          },
+          "audio_plan_schema_version": {
+            "type": "null"
+          },
+          "render_safe_assets": {
+            "maxItems": 0
+          },
+          "audio_rule_compliance": {
+            "type": "object",
+            "properties": {
+              "planned_music_asset_id": {
+                "type": "null"
+              },
+              "planned_sfx_asset_ids": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "verified_exact_asset_match": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "description": "Immutable terminal render manifest. Audio asset UUID/kind/SHA/license values must mirror the exact immutable audio_assets versions in the committed plan, and current render-safe eligibility is rechecked at render admission. Null audio_plan_id requires null plan identity, zero render_safe_assets, and zero planned MUSIC/SFX claims."
+}

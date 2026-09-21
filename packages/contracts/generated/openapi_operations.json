@@ -1,0 +1,191 @@
+[
+  {
+    "method": "GET",
+    "path": "/healthz",
+    "operationId": "healthz",
+    "authorization": "public",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "GET",
+    "path": "/readyz",
+    "operationId": "readyz",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/analytics/check-ins",
+    "operationId": "recordAnalyticsCheckin",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/analytics/due",
+    "operationId": "listDueAnalytics",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/campaigns",
+    "operationId": "listCampaigns",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/campaigns/import",
+    "operationId": "importCampaign",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/campaigns/{id}",
+    "operationId": "getCampaign",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/clips",
+    "operationId": "listClips",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/clips/{id}",
+    "operationId": "getClip",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/costs/summary",
+    "operationId": "getCostSummary",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/finance/summary",
+    "operationId": "getFinanceSummary",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/generation-runs",
+    "operationId": "createGenerationRun",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/generation-runs/{id}",
+    "operationId": "getGenerationRun",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/owner-actions",
+    "operationId": "listOwnerActions",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/owner-actions/{id}/resolve",
+    "operationId": "resolveOwnerAction",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/payout-events",
+    "operationId": "recordPayoutEvent",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/polli/live/sessions",
+    "operationId": "createPolliLiveSession",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/polli/query",
+    "operationId": "queryPolli",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/polli/sessions",
+    "operationId": "startPolliSession",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/polli/sessions/{id}/end",
+    "operationId": "endPolliSession",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts",
+    "operationId": "createPost",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/schedule/tomorrow",
+    "operationId": "getTomorrowSchedule",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/sources/import",
+    "operationId": "importSource",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "GET",
+    "path": "/v1/sources/{id}",
+    "operationId": "getSource",
+    "authorization": "owner-jwt",
+    "idempotency": "not-required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/submissions",
+    "operationId": "recordSubmission",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/uploads/intents",
+    "operationId": "createUploadIntent",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  },
+  {
+    "method": "POST",
+    "path": "/v1/uploads/{id}/complete",
+    "operationId": "completeUpload",
+    "authorization": "owner-jwt",
+    "idempotency": "required"
+  }
+]

@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "unknown_policy": "eligibility UNKNOWN, missing evidence, missing campaign applicability, missing/false required flag, expired rights, or UNKNOWN campaign timing/audio rule never upgrades to permission",
+  "expiration_rule": "expired at T iff expires_at is non-null and T >= expires_at",
+  "stages": {
+    "INGEST": {
+      "required_true": [
+        "may_ingest"
+      ],
+      "requires_eligible": true,
+      "requires_campaign_applicability": true,
+      "platform_required": false
+    },
+    "PAID_TRANSCRIPTION": {
+      "required_true": [
+        "may_transcribe"
+      ],
+      "requires_eligible": true,
+      "requires_campaign_applicability": true,
+      "platform_required": false
+    },
+    "EDIT_PLAN": {
+      "required_true": [
+        "may_edit",
+        "derivative_edits"
+      ],
+      "requires_eligible": true,
+      "requires_campaign_applicability": true,
+      "platform_required": false
+    },
+    "RENDER": {
+      "required_true": [
+        "may_render",
+        "may_edit",
+        "derivative_edits"
+      ],
+      "requires_eligible": true,
+      "requires_campaign_applicability": true,
+      "platform_required": false
+    },
+    "COMPENSATED_CAMPAIGN_PRODUCTION": {
+      "required_true": [
+        "commercial_use",
+        "may_edit",
+        "derivative_edits",
+        "may_render"
+      ],
+      "requires_eligible": true,
+      "requires_campaign_applicability": true,
+      "platform_required": false
+    },
+    "PUBLICATION_RECOMMENDATION": {
+      "required_true": [
+        "may_publish",
+        "commercial_use",
+        "derivative_edits"
+      ],
+      "requires_eligible": true,
+      "requires_campaign_applicability": true,
+      "platform_required": true,
+      "platform_checks": [
+        "platform in allowed_platforms",
+        "platform_limits.<platform>.allowed == true"
+      ]
+    }
+  },
+  "clip_creation_required_true": [
+    "may_edit",
+    "derivative_edits",
+    "may_render",
+    "may_publish",
+    "commercial_use"
+  ],
+  "native_audio_rule_resolution": {
+    "ALLOWED": [
+      "RECOMMENDED",
+      "NOT_APPLICABLE"
+    ],
+    "PROHIBITED": [
+      "PROHIBITED"
+    ],
+    "UNKNOWN": [
+      "UNKNOWN"
+    ],
+    "NOT_APPLICABLE": [
+      "NOT_APPLICABLE"
+    ]
+  },
+  "action_time_requirements": [
+    "evidence_captured_at <= action timestamp",
+    "committed_at <= action timestamp",
+    "campaign applicability created_at <= action timestamp",
+    "expires_at is null OR action timestamp < expires_at"
+  ],
+  "current_version_rule": "For source S at T choose the highest rights_version with evidence_captured_at<=T and committed_at<=T. Evaluate campaign applicability/stage ONLY on that newest version. If it revokes/narrows authority, do not fall back to an older broader version. Later grants never authorize past actions.",
+  "downstream_restrictions": {
+    "required_attribution": "explicit posting source_attribution + exact text in owner-copy caption",
+    "platform_max_clip_seconds": "edit/render/QC/READY limit; combined with campaign limits using most restrictive known compatible bound"
+  },
+  "temporal_requirements": [
+    "evidence_captured_at <= action_at",
+    "committed_at <= action_at",
+    "source_rights_campaigns.created_at <= action_at",
+    "expires_at IS NULL OR action_at < expires_at"
+  ],
+  "current_applicable_version_rule": "Select highest rights_version for source with evidence_captured_at<=T and committed_at<=T. Evaluate that newest version for campaign applicability + stage flags. If it denies/is UNKNOWN/not applicable, do NOT fall back to an older broader version.",
+  "future_recommendation_rule": "Before returning a clip as an authorized posting recommendation/schedule item, re-evaluate the stored rights_id against honor_current_rights_for_action(source,campaign,platform,PUBLICATION_RECOMMENDATION,as_of). A mismatch blocks/omits the recommendation but never rewrites historical clip provenance.",
+  "db_authoritative_internal_action_times": {
+    "paid_transcription": "transcripts.created_at overwritten by DB statement_timestamp on INSERT",
+    "allocation": "run_campaign_allocations.decision_as_of overwritten by DB statement_timestamp on INSERT",
+    "edit_plan_commit": "edit_plans.committed_at overwritten by DB statement_timestamp on INSERT",
+    "audio_plan_commit": "audio_plans.committed_at overwritten by DB statement_timestamp on INSERT",
+    "clip_publication_recommendation": "clips.created_at/recommendation action time overwritten by DB statement_timestamp on INSERT",
+    "render_start": "PLANNED->RENDERING sets clips.render_started_at=statement_timestamp and re-evaluates RENDER authority before cost",
+    "render_manifest_acceptance": "render_manifests.created_at overwritten by DB; rights check uses statement_timestamp, never manifest-supplied time",
+    "campaign_terms_snapshot_record": "campaign_terms_snapshots.created_at overwritten by DB statement_timestamp on INSERT; captured_at remains external/provider factual time"
+  },
+  "externally_supplied_factual_times": [
+    "source_rights.evidence_captured_at",
+    "campaign_terms_snapshots.captured_at",
+    "posts.published_at",
+    "analytics_observations.observed_at"
+  ],
+  "render_transition_rule": "PLANNED -> RENDERING MUST call honor_current_rights_for_action(source,campaign,platform,RENDER,statement_timestamp()) and reject a newer revocation/narrowing before render cost. READY repeats current-rights validation."
+}

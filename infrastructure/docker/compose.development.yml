@@ -1,0 +1,134 @@
+services:
+  postgres:
+    image: postgres:17.6
+    environment:
+      POSTGRES_PASSWORD: dev-only-postgres
+      POSTGRES_DB: honor
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d honor"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    ports: ["127.0.0.1:54329:5432"]
+
+  db-bootstrap:
+    image: postgres:17.6
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: dev-only-postgres
+    volumes:
+      - ../../tests/integration/bootstrap_auth_stub.sql:/bootstrap_auth_stub.sql:ro
+    command: ["psql","-h","postgres","-U","postgres","-d","honor","-v","ON_ERROR_STOP=1","-f","/bootstrap_auth_stub.sql"]
+
+  db-migrate:
+    build: {context: ../.., dockerfile: services/api/Dockerfile}
+    depends_on:
+      db-bootstrap:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_ADMIN_URL: postgresql://postgres:dev-only-postgres@postgres:5432/honor
+    command: ["python","/app/scripts/migrate.py"]
+
+  db-seed:
+    image: postgres:17.6
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+    environment:
+      PGPASSWORD: dev-only-postgres
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        psql -h postgres -U postgres -d honor -v ON_ERROR_STOP=1 <<'SQL'
+        ALTER ROLE honor_app PASSWORD 'dev-only-honor-app';
+        INSERT INTO auth.users(id) VALUES ('00000000-0000-0000-0000-000000000001') ON CONFLICT DO NOTHING;
+        INSERT INTO owner_profiles(user_id,display_name,timezone,active)
+        VALUES ('00000000-0000-0000-0000-000000000001','Local Owner','America/Chicago',true)
+        ON CONFLICT (user_id) DO UPDATE SET active=true;
+        SQL
+
+  redis:
+    image: redis:8.10.1
+    command: ["sh", "-c", "exec redis-server --protected-mode yes --appendonly yes --requirepass $$REDIS_PASSWORD"]
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-dev-only-redis-password-32-bytes-minimum}"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    expose: ["6379"]
+
+  api:
+    build: {context: ../.., dockerfile: services/api/Dockerfile}
+    depends_on:
+      db-seed:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      HONOR_ENV: development
+      HONOR_OWNER_USER_ID: 00000000-0000-0000-0000-000000000001
+      SUPABASE_URL: https://example.supabase.co
+      SUPABASE_JWKS_URL: https://example.supabase.co/auth/v1/.well-known/jwks.json
+      DATABASE_APP_URL: postgresql://honor_app:dev-only-honor-app@postgres:5432/honor
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-dev-only-redis-password-32-bytes-minimum}"
+    expose: ["8000"]
+
+  worker:
+    build: {context: ../.., dockerfile: services/worker/Dockerfile}
+    depends_on:
+      db-seed:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment: &worker-environment
+      HONOR_OWNER_USER_ID: 00000000-0000-0000-0000-000000000001
+      DATABASE_APP_URL: postgresql://honor_app:dev-only-honor-app@postgres:5432/honor
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-dev-only-redis-password-32-bytes-minimum}"
+      CELERY_BROKER_DB: 1
+      CELERY_RESULT_DB: 2
+      HONOR_WORKER_CONCURRENCY: 1
+      HONOR_RECONCILE_INTERVAL_SECONDS: 5
+
+  reconciler:
+    build: {context: ../.., dockerfile: services/worker/Dockerfile}
+    command: ["python","-m","honor_worker.reconciler"]
+    depends_on:
+      db-seed:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment: *worker-environment
+
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_local_not_live
+        NEXT_PUBLIC_HONOR_BFF_BASE: /api/v1
+    depends_on: [api]
+    environment:
+      NODE_ENV: production
+      SUPABASE_URL: https://example.supabase.co
+      HONOR_PUBLIC_ORIGIN: http://localhost:3000
+      HONOR_OWNER_USER_ID: 00000000-0000-0000-0000-000000000001
+      HONOR_INTERNAL_API_ORIGIN: http://api:8000
+    expose: ["3000"]
+
+  caddy:
+    image: caddy:2.10.2
+    environment:
+      HONOR_PUBLIC_HOST: :80
+    volumes: ["../Caddyfile:/etc/caddy/Caddyfile:ro"]
+    depends_on: [web, api]
+    ports: ["3000:80"]

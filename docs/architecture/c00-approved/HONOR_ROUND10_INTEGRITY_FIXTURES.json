@@ -1,0 +1,338 @@
+{
+  "schema_version": 1,
+  "placement_cases": [
+    {
+      "rule_key": "editing_restrictions",
+      "code": "UNIQUE_PER_CAMPAIGN",
+      "expect": "REJECT"
+    },
+    {
+      "rule_key": "content_restrictions",
+      "code": "NO_CROP",
+      "expect": "REJECT"
+    },
+    {
+      "rule_key": "uniqueness_rules",
+      "code": "NO_PROFANITY",
+      "expect": "REJECT"
+    },
+    {
+      "rule_key": "editing_restrictions",
+      "code": "OWNER_OWNED_SOURCE_ONLY",
+      "expect": "REJECT"
+    },
+    {
+      "rule_key": "uniqueness_rules",
+      "code": "UNIQUE_PER_CAMPAIGN",
+      "expect": "ACCEPT"
+    }
+  ],
+  "compliance_cardinality_cases": [
+    {
+      "name": "compliant_plus_violation",
+      "active": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT"
+        }
+      ],
+      "records": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT",
+          "result": "COMPLIANT"
+        },
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT",
+          "result": "VIOLATION"
+        }
+      ],
+      "expect": "REJECT"
+    },
+    {
+      "name": "compliant_plus_unknown",
+      "active": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT"
+        }
+      ],
+      "records": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT",
+          "result": "COMPLIANT"
+        },
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT",
+          "result": "UNKNOWN"
+        }
+      ],
+      "expect": "REJECT"
+    },
+    {
+      "name": "two_compliant_proofs",
+      "active": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT"
+        }
+      ],
+      "records": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT",
+          "result": "COMPLIANT",
+          "proof_id": "a"
+        },
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT",
+          "result": "COMPLIANT",
+          "proof_id": "b"
+        }
+      ],
+      "expect": "REJECT"
+    },
+    {
+      "name": "extra_absent_clause",
+      "active": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT"
+        }
+      ],
+      "records": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT",
+          "result": "COMPLIANT"
+        },
+        {
+          "code": "NO_SPEED_CHANGE",
+          "effect": "PROHIBIT",
+          "scope": "EDIT",
+          "result": "COMPLIANT"
+        }
+      ],
+      "expect": "REJECT"
+    },
+    {
+      "name": "one_exact_compliant",
+      "active": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT"
+        }
+      ],
+      "records": [
+        {
+          "code": "NO_CROP",
+          "effect": "PROHIBIT",
+          "scope": "EDIT",
+          "result": "COMPLIANT"
+        }
+      ],
+      "expect": "ACCEPT"
+    }
+  ],
+  "proof_reference_cases": [
+    {
+      "name": "random_string",
+      "reference": "random text",
+      "artifact_exists": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "nonexistent_owner_action",
+      "kind": "OWNER_REVIEW",
+      "artifact_exists": true,
+      "owner_action_exists": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "open_owner_action",
+      "kind": "OWNER_REVIEW",
+      "artifact_exists": true,
+      "owner_action_exists": true,
+      "owner_status": "OPEN",
+      "expect": "REJECT"
+    },
+    {
+      "name": "late_owner_action",
+      "kind": "OWNER_REVIEW",
+      "artifact_exists": true,
+      "owner_action_exists": true,
+      "owner_status": "RESOLVED",
+      "resolved_before_commit": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "unrelated_owner_action",
+      "kind": "OWNER_REVIEW",
+      "artifact_exists": true,
+      "owner_action_exists": true,
+      "owner_status": "RESOLVED",
+      "resolved_before_commit": true,
+      "context_match": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "wrong_target_hash",
+      "kind": "CLAIMS_EVIDENCE_REVIEW",
+      "artifact_exists": true,
+      "target_match": false,
+      "hash_match": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "exact_artifact",
+      "kind": "CLAIMS_EVIDENCE_REVIEW",
+      "artifact_exists": true,
+      "target_match": true,
+      "hash_match": true,
+      "result": "COMPLIANT",
+      "evidence_before_commit": true,
+      "expect": "ACCEPT"
+    }
+  ],
+  "null_audio_plan_cases": [
+    {
+      "name": "null_plan_music_asset",
+      "audio_plan": null,
+      "asset_kinds": [
+        "MUSIC"
+      ],
+      "rule_state": "KNOWN",
+      "qc": "PASS",
+      "expect": "REJECT"
+    },
+    {
+      "name": "null_plan_sfx_asset",
+      "audio_plan": null,
+      "asset_kinds": [
+        "SFX"
+      ],
+      "rule_state": "KNOWN",
+      "qc": "PASS",
+      "expect": "REJECT"
+    },
+    {
+      "name": "prohibited_null_plan_embedded",
+      "audio_plan": null,
+      "asset_kinds": [
+        "MUSIC"
+      ],
+      "rule_state": "KNOWN",
+      "render_safe_audio": "PROHIBITED",
+      "qc": "PASS",
+      "expect": "REJECT"
+    },
+    {
+      "name": "unknown_null_plan_na",
+      "audio_plan": null,
+      "asset_kinds": [],
+      "rule_state": "UNKNOWN",
+      "qc": "NOT_APPLICABLE",
+      "expect": "REJECT"
+    },
+    {
+      "name": "not_applicable_silent",
+      "audio_plan": null,
+      "asset_kinds": [],
+      "rule_state": "NOT_APPLICABLE",
+      "qc": "NOT_APPLICABLE",
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "known_silent_requires_pass",
+      "audio_plan": null,
+      "asset_kinds": [],
+      "rule_state": "KNOWN",
+      "qc": "PASS",
+      "expect": "ACCEPT"
+    }
+  ],
+  "posting_revision_cases": [
+    {
+      "name": "changed_copy_stale_proof",
+      "content_changed": true,
+      "proof_version_matches": false,
+      "proof_hash_matches": false,
+      "proof_fresh": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "changed_copy_fresh_claims_proof",
+      "content_changed": true,
+      "proof_kind": "CLAIMS_EVIDENCE_REVIEW",
+      "proof_version_matches": true,
+      "proof_hash_matches": true,
+      "proof_fresh": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "changed_copy_fresh_owner_review",
+      "content_changed": true,
+      "proof_kind": "OWNER_REVIEW",
+      "proof_version_matches": true,
+      "proof_hash_matches": true,
+      "proof_fresh": true,
+      "owner_resolved_before_revision": true,
+      "context_match": true,
+      "expect": "ACCEPT"
+    }
+  ],
+  "experiment_arm_cases": [
+    {
+      "name": "running_a_to_draft_b",
+      "old_parent": "RUNNING",
+      "reparent": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "draft_a_to_draft_b",
+      "old_parent": "DRAFT",
+      "reparent": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "arm_id_rewrite",
+      "old_parent": "DRAFT",
+      "id_change": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "created_at_rewrite",
+      "old_parent": "DRAFT",
+      "created_at_change": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "description_control_same_draft",
+      "old_parent": "DRAFT",
+      "design_change": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "mutation_after_running",
+      "old_parent": "RUNNING",
+      "design_change": true,
+      "expect": "REJECT"
+    }
+  ]
+}

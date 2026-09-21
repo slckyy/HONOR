@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "causal_policy": "Experiment assignment supports causal evaluation only when assignment/exposure and planned metric are present; observational correlations remain MODEL_ANALYSIS and must not be narrated as causal.",
+  "experiment_status": [
+    "DRAFT",
+    "RUNNING",
+    "STOPPED",
+    "COMPLETED",
+    "CANCELLED"
+  ],
+  "assignment_units": [
+    "GENERATION_RUN",
+    "CLIP",
+    "SOCIAL_ACCOUNT"
+  ],
+  "immutability": {
+    "arms": "experiment_arms.id, experiment_id and created_at are immutable after INSERT. While the unchanged parent remains DRAFT only arm_key, description and is_control may change; no arm INSERT/UPDATE/DELETE after parent leaves DRAFT.",
+    "assignment": "experiment_assignments.id, experiment_id, arm_id, unit_type, unit_id, assigned_at and created_at are immutable after INSERT; only exposed_at may transition NULL -> DB statement_timestamp exactly once while RUNNING.",
+    "historical_outcomes": "analytics/earnings remain linked through assigned clip/post/account/run and are never rewritten",
+    "design": "hypothesis, feature_key, primary_metric and unit_type may change only on an update that remains DRAFT; they cannot change in the same statement that transitions out of DRAFT or at any later status.",
+    "experiments": "experiments.id and created_at are immutable from INSERT onward. After leaving DRAFT, hypothesis/feature_key/primary_metric/unit_type are immutable; after leaving RUNNING, ended_at and captured stopping_reason are immutable; STOPPED -> COMPLETED preserves both."
+  },
+  "required_fields": {
+    "experiments": [
+      "id",
+      "name",
+      "hypothesis",
+      "feature_key",
+      "unit_type",
+      "status",
+      "primary_metric",
+      "started_at",
+      "ended_at",
+      "stopping_reason",
+      "created_at"
+    ],
+    "experiment_arms": [
+      "id",
+      "experiment_id",
+      "arm_key",
+      "description",
+      "is_control",
+      "created_at"
+    ],
+    "experiment_assignments": [
+      "id",
+      "experiment_id",
+      "arm_id",
+      "unit_type",
+      "unit_id",
+      "assigned_at",
+      "exposed_at",
+      "created_at"
+    ]
+  },
+  "status_machine": {
+    "creation": [
+      "DRAFT"
+    ],
+    "enum": [
+      "DRAFT",
+      "RUNNING",
+      "STOPPED",
+      "COMPLETED",
+      "CANCELLED"
+    ],
+    "transitions": {
+      "DRAFT": [
+        "RUNNING",
+        "CANCELLED"
+      ],
+      "RUNNING": [
+        "STOPPED",
+        "COMPLETED",
+        "CANCELLED"
+      ],
+      "STOPPED": [
+        "COMPLETED"
+      ],
+      "COMPLETED": [],
+      "CANCELLED": []
+    }
+  },
+  "assignment_immutability": "Assignments may be INSERTed only while RUNNING; assignment.unit_type must equal experiment.unit_type; assigned_at/created_at are DB-authored; id/experiment_id/arm_id/unit_type/unit_id/assigned_at/created_at are immutable; exposed_at may transition NULL->DB statement_timestamp exactly once while RUNNING and cannot precede started_at/assigned_at.",
+  "outcome_linkage": "clip.experiment_assignment_id and generation/candidate/allocation assignment IDs allow analytics/earnings to be joined via clip->post; no duplicate experiment metric store is authoritative",
+  "causal_claim_rule": "Only results from explicit experiment assignments/exposure and predeclared primary metric may be described as experiment evidence. Observational correlations remain MODEL_ANALYSIS and are not causal facts.",
+  "predeclaration": {
+    "draft_only_design": [
+      "hypothesis",
+      "feature_key",
+      "primary_metric",
+      "unit_type",
+      "arm definitions"
+    ],
+    "run_gate": "DRAFT->RUNNING requires at least two arms and exactly one control arm; started_at is DB statement_timestamp.",
+    "v1_control_rule": "exactly one experiment_arms.is_control=true; at least one non-control arm"
+  },
+  "end_chronology": "RUNNING->STOPPED|COMPLETED|CANCELLED and DRAFT->CANCELLED establish ended_at with DB statement_timestamp. STOPPED->COMPLETED preserves the already-established ended_at; terminal design/assignments remain immutable.",
+  "scope_matrix": {
+    "candidates.experiment_assignment_id": "assignment unit_type=GENERATION_RUN and unit_id=candidates.generation_run_id",
+    "run_campaign_allocations.experiment_assignment_id": "experiment.unit_type=GENERATION_RUN => assignment.unit_id=generation_run_id; experiment.unit_type=SOCIAL_ACCOUNT => assignment.unit_id=social_account_id; CLIP scope is not legal on allocation",
+    "clips.experiment_assignment_id": "CLIP => unit_id=clips.id; inherited GENERATION_RUN => unit_id=clips.generation_run_id; inherited SOCIAL_ACCOUNT => unit_id=clips.social_account_id. No other linkage.",
+    "causal_consumers": "Analytics/Polli may treat an assignment as experiment evidence only after this exact linkage and exposure chronology validate."
+  },
+  "serialization_contract": {
+    "parent_lock": "Every experiment_arms INSERT/UPDATE/DELETE and experiment_assignments INSERT/UPDATE/DELETE obtains SELECT ... FOR UPDATE on the parent experiments row before checking status. The experiment status transition itself holds the same row lock.",
+    "draft_boundary": "DRAFT -> RUNNING sees the final committed arm set; no arm mutation can commit after the parent leaves DRAFT.",
+    "running_boundary": "RUNNING termination serializes with assignment admission; no assignment can commit after the parent leaves RUNNING.",
+    "stopping_history": "RUNNING -> STOPPED/COMPLETED/CANCELLED DB-authors ended_at and freezes stopping_reason. STOPPED -> COMPLETED preserves both exactly.",
+    "arm_identity": "INSERT locks/checks NEW parent DRAFT. UPDATE/DELETE locks/checks OLD parent; experiment_id cannot change even between two DRAFT experiments; id and created_at are immutable. Only arm_key/description/is_control may change while the same OLD parent remains DRAFT.",
+    "row_identity": "experiments.id/created_at and experiment_assignments.id are independently guarded as immutable; foreign keys are not relied on to protect primary historical identity."
+  }
+}

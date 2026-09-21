@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "posting_proof_version_cases": [
+    {
+      "name": "hashtag_only_old_version_proof",
+      "recommendation_changed": true,
+      "proof_version_matches": false,
+      "proof_hash_matches": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "native_audio_only_old_version_proof",
+      "recommendation_changed": true,
+      "proof_version_matches": false,
+      "proof_hash_matches": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "disclosure_submission_only_old_version_proof",
+      "recommendation_changed": true,
+      "proof_version_matches": false,
+      "proof_hash_matches": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "remove_posting_compliance",
+      "recommendation_changed": true,
+      "active_posting_restrictions": 1,
+      "records": 0,
+      "expect": "REJECT"
+    },
+    {
+      "name": "replace_with_unrelated_proof_same_text",
+      "recommendation_changed": true,
+      "proof_version_matches": true,
+      "proof_hash_matches": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "same_claim_text_fresh_new_version_proof",
+      "recommendation_changed": true,
+      "proof_version_matches": true,
+      "proof_hash_matches": true,
+      "proof_fresh": true,
+      "expect": "ACCEPT"
+    }
+  ],
+  "audio_asset_eligibility_cases": [
+    {
+      "name": "eligible",
+      "active": true,
+      "column_render_safe": true,
+      "inner_render_safe": true,
+      "commercial": true,
+      "derivative": true,
+      "platform": true,
+      "campaign_restriction": null,
+      "attribution": false,
+      "license_required": false,
+      "license_evidence": false,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "render_safe_contradiction",
+      "active": true,
+      "column_render_safe": true,
+      "inner_render_safe": false,
+      "commercial": true,
+      "derivative": true,
+      "platform": true,
+      "campaign_restriction": null,
+      "attribution": false,
+      "license_required": false,
+      "license_evidence": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "commercial_false",
+      "active": true,
+      "column_render_safe": true,
+      "inner_render_safe": true,
+      "commercial": false,
+      "derivative": true,
+      "platform": true,
+      "campaign_restriction": null,
+      "attribution": false,
+      "license_required": false,
+      "license_evidence": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "derivative_false",
+      "active": true,
+      "column_render_safe": true,
+      "inner_render_safe": true,
+      "commercial": true,
+      "derivative": false,
+      "platform": true,
+      "campaign_restriction": null,
+      "attribution": false,
+      "license_required": false,
+      "license_evidence": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "platform_missing",
+      "active": true,
+      "column_render_safe": true,
+      "inner_render_safe": true,
+      "commercial": true,
+      "derivative": true,
+      "platform": false,
+      "campaign_restriction": null,
+      "attribution": false,
+      "license_required": false,
+      "license_evidence": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "campaign_restriction_nonnull",
+      "active": true,
+      "column_render_safe": true,
+      "inner_render_safe": true,
+      "commercial": true,
+      "derivative": true,
+      "platform": true,
+      "campaign_restriction": "Only campaign X",
+      "attribution": false,
+      "license_required": false,
+      "license_evidence": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "attribution_required",
+      "active": true,
+      "column_render_safe": true,
+      "inner_render_safe": true,
+      "commercial": true,
+      "derivative": true,
+      "platform": true,
+      "campaign_restriction": null,
+      "attribution": true,
+      "license_required": false,
+      "license_evidence": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "license_evidence_missing",
+      "active": true,
+      "column_render_safe": true,
+      "inner_render_safe": true,
+      "commercial": true,
+      "derivative": true,
+      "platform": true,
+      "campaign_restriction": null,
+      "attribution": false,
+      "license_required": true,
+      "license_evidence": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "license_evidence_present",
+      "active": true,
+      "column_render_safe": true,
+      "inner_render_safe": true,
+      "commercial": true,
+      "derivative": true,
+      "platform": true,
+      "campaign_restriction": null,
+      "attribution": false,
+      "license_required": true,
+      "license_evidence": true,
+      "expect": "ACCEPT"
+    }
+  ],
+  "asset_deactivation_render_cases": [
+    {
+      "name": "eligible_plan_then_deactivated_before_render",
+      "eligible_at_plan": true,
+      "active_at_render": false,
+      "expect": "REJECT"
+    },
+    {
+      "name": "eligible_plan_still_active_at_render",
+      "eligible_at_plan": true,
+      "active_at_render": true,
+      "expect": "ACCEPT"
+    }
+  ],
+  "manifest_provenance_cases": [
+    {
+      "name": "exact",
+      "id": true,
+      "kind": true,
+      "sha": true,
+      "license": true,
+      "plan_member": true,
+      "current_eligible": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "wrong_sha",
+      "id": true,
+      "kind": true,
+      "sha": false,
+      "license": true,
+      "plan_member": true,
+      "current_eligible": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "wrong_license",
+      "id": true,
+      "kind": true,
+      "sha": true,
+      "license": false,
+      "plan_member": true,
+      "current_eligible": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "wrong_kind",
+      "id": true,
+      "kind": false,
+      "sha": true,
+      "license": true,
+      "plan_member": true,
+      "current_eligible": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "right_uuid_not_in_plan",
+      "id": true,
+      "kind": true,
+      "sha": true,
+      "license": true,
+      "plan_member": false,
+      "current_eligible": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "revoked_at_manifest",
+      "id": true,
+      "kind": true,
+      "sha": true,
+      "license": true,
+      "plan_member": true,
+      "current_eligible": false,
+      "expect": "REJECT"
+    }
+  ],
+  "audio_asset_immutability_cases": [
+    {
+      "name": "change_sha",
+      "material_change": true,
+      "active_old": true,
+      "active_new": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "change_allowed_uses",
+      "material_change": true,
+      "active_old": true,
+      "active_new": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "deactivate",
+      "material_change": false,
+      "active_old": true,
+      "active_new": false,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "reactivate",
+      "material_change": false,
+      "active_old": false,
+      "active_new": true,
+      "expect": "REJECT"
+    }
+  ],
+  "owner_action_cases": [
+    {
+      "name": "create_resolved",
+      "insert_status": "RESOLVED",
+      "expect": "REJECT"
+    },
+    {
+      "name": "valid_open_create",
+      "insert_status": "OPEN",
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "backdated_resolved_at",
+      "old_status": "OPEN",
+      "new_status": "RESOLVED",
+      "caller_backdated": true,
+      "canonical_resolution": true,
+      "expect": "DB_AUTHORED"
+    },
+    {
+      "name": "mutate_resolved_resolution",
+      "old_status": "RESOLVED",
+      "new_status": "RESOLVED",
+      "mutation": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "reopen_resolved",
+      "old_status": "RESOLVED",
+      "new_status": "OPEN",
+      "mutation": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "change_context_after_resolved",
+      "old_status": "RESOLVED",
+      "new_status": "RESOLVED",
+      "context_change": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "valid_cancel",
+      "old_status": "OPEN",
+      "new_status": "CANCELLED",
+      "canonical_cancel": true,
+      "expect": "ACCEPT"
+    }
+  ],
+  "experiment_identity_cases": [
+    {
+      "name": "assignment_id_change_during_exposure",
+      "assignment_id_change": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "experiment_created_at_change_draft",
+      "experiment_created_at_change": true,
+      "status": "DRAFT",
+      "expect": "REJECT"
+    },
+    {
+      "name": "experiment_created_at_change_running",
+      "experiment_created_at_change": true,
+      "status": "RUNNING",
+      "expect": "REJECT"
+    },
+    {
+      "name": "experiment_id_change_without_children",
+      "experiment_id_change": true,
+      "status": "DRAFT",
+      "expect": "REJECT"
+    },
+    {
+      "name": "valid_exposure_only",
+      "assignment_id_change": false,
+      "exposure_null_to_time": true,
+      "expect": "ACCEPT"
+    }
+  ],
+  "null_audio_consistency_cases": [
+    {
+      "name": "silent_truthful",
+      "audio_plan_id": null,
+      "plan_fields_null": true,
+      "assets": 0,
+      "planned_music": null,
+      "planned_sfx": 0,
+      "rule_snapshot_match": true,
+      "expect": "ACCEPT"
+    },
+    {
+      "name": "null_plan_claims_music",
+      "audio_plan_id": null,
+      "plan_fields_null": true,
+      "assets": 0,
+      "planned_music": "uuid",
+      "planned_sfx": 0,
+      "rule_snapshot_match": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "null_plan_claims_sfx",
+      "audio_plan_id": null,
+      "plan_fields_null": true,
+      "assets": 0,
+      "planned_music": null,
+      "planned_sfx": 1,
+      "rule_snapshot_match": true,
+      "expect": "REJECT"
+    },
+    {
+      "name": "null_plan_wrong_rule_snapshot",
+      "audio_plan_id": null,
+      "plan_fields_null": true,
+      "assets": 0,
+      "planned_music": null,
+      "planned_sfx": 0,
+      "rule_snapshot_match": false,
+      "expect": "REJECT"
+    }
+  ]
+}

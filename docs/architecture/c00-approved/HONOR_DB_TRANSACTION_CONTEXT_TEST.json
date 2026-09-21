@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "purpose": "Prove the frozen transaction-local owner context cannot leak across a reused pooled PostgreSQL session.",
+  "connection_reused": true,
+  "transaction_a": [
+    {
+      "sql": "BEGIN",
+      "expect": "ok"
+    },
+    {
+      "sql": "SELECT set_config('honor.owner_user_id', $1, true)",
+      "bind": "VALIDATED_OWNER_UUID",
+      "expect": "transaction-local value set"
+    },
+    {
+      "sql": "SELECT current_setting('honor.owner_user_id', true)",
+      "expect": "VALIDATED_OWNER_UUID"
+    },
+    {
+      "sql": "COMMIT",
+      "expect": "ok"
+    }
+  ],
+  "between_transactions": {
+    "sql": "SELECT current_setting('honor.owner_user_id', true)",
+    "expect": "NULL_OR_EMPTY"
+  },
+  "transaction_b_before_set": [
+    {
+      "sql": "BEGIN",
+      "expect": "ok"
+    },
+    {
+      "sql": "SELECT current_setting('honor.owner_user_id', true)",
+      "expect": "NULL_OR_EMPTY"
+    },
+    {
+      "sql": "SELECT honor_owner_authorized()",
+      "expect": false
+    },
+    {
+      "sql": "ROLLBACK",
+      "expect": "ok"
+    }
+  ],
+  "pass_condition": "Transaction A owner identity is absent before transaction B explicitly establishes its own transaction-local context."
+}

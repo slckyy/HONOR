@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/source_rights.authorized_uses.v1.json",
+  "title": "source_rights.authorized_uses.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "may_ingest": {
+      "type": "boolean"
+    },
+    "may_transcribe": {
+      "type": "boolean"
+    },
+    "may_edit": {
+      "type": "boolean"
+    },
+    "may_render": {
+      "type": "boolean"
+    },
+    "may_publish": {
+      "type": "boolean"
+    },
+    "commercial_use": {
+      "type": "boolean"
+    },
+    "derivative_edits": {
+      "type": "boolean"
+    },
+    "allowed_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "TIKTOK",
+          "INSTAGRAM_REELS",
+          "YOUTUBE_SHORTS"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 3,
+      "uniqueItems": true
+    },
+    "required_attribution": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "may_ingest",
+    "may_transcribe",
+    "may_edit",
+    "may_render",
+    "may_publish",
+    "commercial_use",
+    "derivative_edits",
+    "allowed_platforms",
+    "required_attribution"
+  ],
+  "x-honor-writer": "api|worker",
+  "description": "Frozen authorized-use flags. Authorization expiration is NOT duplicated here: source_rights.expires_at (and RightsEvidenceInput.expires_at before persistence) is the sole V1 expiration authority."
+}

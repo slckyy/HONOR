@@ -1,0 +1,1693 @@
+{
+  "schema_version": 1,
+  "rule_set_identity": "campaign_rule_set_commits(campaign_id,terms_snapshot_id,schema_version); terms_snapshot_id remains evidence/rule snapshot identity but is consumable only after immutable seal",
+  "truth_model": {
+    "KNOWN": "typed_value required + same-campaign evidence_snapshot_id required + verified_at required",
+    "NOT_APPLICABLE": "typed_value null + same-campaign evidence_snapshot_id required + verified_at required",
+    "UNKNOWN": "typed_value MUST be null; evidence optional; downstream critical consumers block rather than infer permission"
+  },
+  "unknown_policy": "UNKNOWN never becomes permission/fact. Unrepresentable provider nuance remains UNKNOWN with attributable evidence explaining ambiguity.",
+  "keys": {
+    "provider": {
+      "value_type": "STRING",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "STRING"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "scalar",
+      "consumers": [
+        "campaign_import",
+        "rules_normalization"
+      ],
+      "unknown_blocks": [],
+      "campaign_metadata_mirror": "provider",
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "campaign_url": {
+      "value_type": "STRING",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "STRING"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "format": "uri"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "scalar",
+      "consumers": [
+        "campaign_import"
+      ],
+      "unknown_blocks": [],
+      "campaign_metadata_mirror": "campaign_url",
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "external_campaign_id": {
+      "value_type": "STRING",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "STRING"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "scalar",
+      "consumers": [
+        "campaign_import"
+      ],
+      "unknown_blocks": [],
+      "campaign_metadata_mirror": "external_campaign_id",
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "status": {
+      "value_type": "CAMPAIGN_STATUS",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "CAMPAIGN_STATUS"
+          },
+          "value": {
+            "type": "string",
+            "enum": [
+              "DISCOVERED",
+              "VERIFYING",
+              "ACTIVE",
+              "PAUSED",
+              "ENDED",
+              "REJECTED"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "scalar",
+      "consumers": [
+        "allocation"
+      ],
+      "unknown_blocks": [
+        "allocation"
+      ],
+      "campaign_metadata_mirror": "status",
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "compensation_model": {
+      "value_type": "COMPENSATION_MODEL",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "COMPENSATION_MODEL"
+          },
+          "value": {
+            "type": "string",
+            "enum": [
+              "CPM",
+              "FLAT_PER_CLIP",
+              "PER_QUALIFIED_ACTION",
+              "HYBRID",
+              "OTHER"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "scalar",
+      "consumers": [
+        "allocation",
+        "finance"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "finance"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": true,
+      "contributes_to_posting_or_qc": false
+    },
+    "cpm_or_rate": {
+      "value_type": "RATE",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "RATE"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$"
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "FLAT",
+                  "PER_1000_VIEWS",
+                  "PER_QUALIFIED_ACTION",
+                  "OTHER"
+                ]
+              },
+              "unit_description": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "amount",
+              "basis",
+              "unit_description"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "USD per declared basis",
+      "shape": "structured",
+      "consumers": [
+        "allocation",
+        "finance"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "finance"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": true,
+      "contributes_to_posting_or_qc": false
+    },
+    "minimum_views": {
+      "value_type": "INTEGER",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "INTEGER"
+          },
+          "value": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "views",
+      "shape": "scalar",
+      "consumers": [
+        "allocation",
+        "finance"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "finance"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": true,
+      "contributes_to_posting_or_qc": false
+    },
+    "max_payout_per_clip": {
+      "value_type": "MONEY_USD",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "MONEY_USD"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "USD",
+      "shape": "scalar",
+      "consumers": [
+        "allocation",
+        "finance"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "finance"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": true,
+      "contributes_to_posting_or_qc": false
+    },
+    "total_budget": {
+      "value_type": "MONEY_USD",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "MONEY_USD"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "USD",
+      "shape": "scalar",
+      "consumers": [
+        "allocation",
+        "finance"
+      ],
+      "unknown_blocks": [],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": true,
+      "contributes_to_posting_or_qc": false
+    },
+    "remaining_budget": {
+      "value_type": "MONEY_USD",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "MONEY_USD"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})\\.[0-9]{6}$"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "USD",
+      "shape": "scalar",
+      "consumers": [
+        "allocation",
+        "finance"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "finance"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": true,
+      "contributes_to_posting_or_qc": false
+    },
+    "start_at": {
+      "value_type": "TIMESTAMP",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "TIMESTAMP"
+          },
+          "value": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "scalar",
+      "consumers": [
+        "allocation",
+        "posting"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "posting"
+      ],
+      "campaign_metadata_mirror": "start_at",
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "end_at": {
+      "value_type": "TIMESTAMP",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "TIMESTAMP"
+          },
+          "value": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "scalar",
+      "consumers": [
+        "allocation",
+        "posting"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "posting"
+      ],
+      "campaign_metadata_mirror": "end_at",
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "deadline_at": {
+      "value_type": "TIMESTAMP",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "TIMESTAMP"
+          },
+          "value": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "scalar",
+      "consumers": [
+        "allocation",
+        "posting",
+        "submission"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "posting",
+        "submission"
+      ],
+      "campaign_metadata_mirror": "deadline_at",
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "eligible_platforms": {
+      "value_type": "PLATFORMS",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "PLATFORMS"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "TIKTOK",
+                "INSTAGRAM_REELS",
+                "YOUTUBE_SHORTS"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "list",
+      "consumers": [
+        "allocation",
+        "clip",
+        "posting"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "clip",
+        "posting"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "eligible_regions": {
+      "value_type": "REGIONS",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "REGIONS"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}(-[A-Z0-9]{1,3})?$"
+            },
+            "minItems": 1,
+            "maxItems": 250,
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "list",
+      "consumers": [
+        "allocation"
+      ],
+      "unknown_blocks": [
+        "allocation"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "eligible_account_requirements": {
+      "value_type": "ACCOUNT_REQUIREMENTS",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "ACCOUNT_REQUIREMENTS"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "min_followers": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "max_followers": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "require_posting_available": {
+                "type": "boolean"
+              },
+              "allowed_health_states": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "HEALTHY",
+                    "CAUTION"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 2,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "min_followers",
+              "max_followers",
+              "require_posting_available",
+              "allowed_health_states"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "min_followers": {
+                      "type": "integer"
+                    },
+                    "max_followers": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "min_followers",
+                    "max_followers"
+                  ]
+                },
+                "then": {
+                  "properties": {}
+                }
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "allocation"
+      ],
+      "unknown_blocks": [
+        "allocation"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "required_tags": {
+      "value_type": "STRING_ARRAY",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "STRING_ARRAY"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "minItems": 0,
+            "maxItems": 200,
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "list",
+      "consumers": [
+        "posting",
+        "submission"
+      ],
+      "unknown_blocks": [
+        "posting"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "required_mentions": {
+      "value_type": "STRING_ARRAY",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "STRING_ARRAY"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^@?[^\\s@]{1,199}$"
+            },
+            "minItems": 0,
+            "maxItems": 200,
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "list",
+      "consumers": [
+        "posting"
+      ],
+      "unknown_blocks": [
+        "posting"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "required_hashtags": {
+      "value_type": "STRING_ARRAY",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "STRING_ARRAY"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^#[^\\s#]{1,99}$"
+            },
+            "minItems": 0,
+            "maxItems": 200,
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "list",
+      "consumers": [
+        "posting"
+      ],
+      "unknown_blocks": [
+        "posting"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "disclosure_requirements": {
+      "value_type": "DISCLOSURE_REQUIREMENTS",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "DISCLOSURE_REQUIREMENTS"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "required": {
+                "type": "boolean"
+              },
+              "text": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "instructions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "minItems": 0,
+                "maxItems": 20
+              },
+              "placement": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "CAPTION",
+                      "VIDEO",
+                      "BOTH",
+                      "PROVIDER_SUBMISSION"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "required",
+              "text",
+              "instructions",
+              "placement"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "edit_plan",
+        "render",
+        "qc",
+        "posting",
+        "submission"
+      ],
+      "unknown_blocks": [
+        "edit_plan",
+        "render",
+        "qc",
+        "posting",
+        "submission"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "source_material_restrictions": {
+      "value_type": "RESTRICTION_SET",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "RESTRICTION_SET"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "clauses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "CAMPAIGN_AUTHORIZED_SOURCE_ONLY",
+                        "OWNER_OWNED_SOURCE_ONLY",
+                        "NO_THIRD_PARTY_SOURCE"
+                      ]
+                    },
+                    "effect": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRE",
+                        "PROHIBIT"
+                      ]
+                    },
+                    "scope": {
+                      "type": "string",
+                      "enum": [
+                        "SOURCE",
+                        "CONTENT",
+                        "EDIT",
+                        "UNIQUENESS"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "code",
+                    "effect",
+                    "scope"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 50,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "clauses"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "source_ingest",
+        "edit_plan"
+      ],
+      "unknown_blocks": [
+        "source_ingest",
+        "allocation",
+        "edit_plan"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "clip_length_min_seconds": {
+      "value_type": "DURATION_SECONDS",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "DURATION_SECONDS"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 600
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "seconds",
+      "shape": "scalar",
+      "consumers": [
+        "edit_plan",
+        "render",
+        "qc"
+      ],
+      "unknown_blocks": [
+        "edit_plan",
+        "render",
+        "qc"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "clip_length_max_seconds": {
+      "value_type": "DURATION_SECONDS",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "DURATION_SECONDS"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 600
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "seconds",
+      "shape": "scalar",
+      "consumers": [
+        "edit_plan",
+        "render",
+        "qc"
+      ],
+      "unknown_blocks": [
+        "edit_plan",
+        "render",
+        "qc"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "content_restrictions": {
+      "value_type": "RESTRICTION_SET",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "RESTRICTION_SET"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "clauses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "NO_PROFANITY",
+                        "BRAND_SAFE_ONLY",
+                        "NO_MISLEADING_CLAIMS"
+                      ]
+                    },
+                    "effect": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRE",
+                        "PROHIBIT"
+                      ]
+                    },
+                    "scope": {
+                      "type": "string",
+                      "enum": [
+                        "SOURCE",
+                        "CONTENT",
+                        "EDIT",
+                        "UNIQUENESS"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "code",
+                    "effect",
+                    "scope"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 50,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "clauses"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "edit_plan",
+        "qc"
+      ],
+      "unknown_blocks": [
+        "edit_plan",
+        "qc"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "editing_restrictions": {
+      "value_type": "RESTRICTION_SET",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "RESTRICTION_SET"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "clauses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "NO_CROP",
+                        "NO_SPEED_CHANGE",
+                        "NO_TEXT_OVERLAY"
+                      ]
+                    },
+                    "effect": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRE",
+                        "PROHIBIT"
+                      ]
+                    },
+                    "scope": {
+                      "type": "string",
+                      "enum": [
+                        "SOURCE",
+                        "CONTENT",
+                        "EDIT",
+                        "UNIQUENESS"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "code",
+                    "effect",
+                    "scope"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 50,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "clauses"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "edit_plan",
+        "qc"
+      ],
+      "unknown_blocks": [
+        "edit_plan",
+        "qc"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "uniqueness_rules": {
+      "value_type": "RESTRICTION_SET",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "RESTRICTION_SET"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "clauses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "NO_REUSED_EDIT",
+                        "UNIQUE_PER_ACCOUNT",
+                        "UNIQUE_PER_CAMPAIGN"
+                      ]
+                    },
+                    "effect": {
+                      "type": "string",
+                      "enum": [
+                        "REQUIRE",
+                        "PROHIBIT"
+                      ]
+                    },
+                    "scope": {
+                      "type": "string",
+                      "enum": [
+                        "SOURCE",
+                        "CONTENT",
+                        "EDIT",
+                        "UNIQUENESS"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "code",
+                    "effect",
+                    "scope"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 50,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "clauses"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "allocation",
+        "edit_plan",
+        "qc"
+      ],
+      "unknown_blocks": [
+        "allocation",
+        "edit_plan",
+        "qc"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "submission_format": {
+      "value_type": "SUBMISSION_FORMAT",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "SUBMISSION_FORMAT"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "required": {
+                "type": "boolean"
+              },
+              "instructions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1500
+                },
+                "minItems": 0,
+                "maxItems": 30
+              },
+              "submission_url": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "required_evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "POST_URL",
+                    "PLATFORM_POST_ID",
+                    "SCREENSHOT",
+                    "ANALYTICS_SNAPSHOT",
+                    "OTHER"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 5,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "required",
+              "instructions",
+              "submission_url",
+              "required_evidence"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "posting",
+        "submission"
+      ],
+      "unknown_blocks": [
+        "posting",
+        "submission"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "analytics_window": {
+      "value_type": "WINDOW",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "WINDOW"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "start_offset_minutes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 525600
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "end_offset_minutes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 525600
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "start_offset_minutes",
+              "end_offset_minutes",
+              "description"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "analytics"
+      ],
+      "unknown_blocks": [
+        "analytics"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    },
+    "payout_window": {
+      "value_type": "WINDOW",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "WINDOW"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "start_offset_minutes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 525600
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "end_offset_minutes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 525600
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "start_offset_minutes",
+              "end_offset_minutes",
+              "description"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "finance",
+        "analytics"
+      ],
+      "unknown_blocks": [
+        "finance",
+        "analytics"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": true,
+      "contributes_to_posting_or_qc": false
+    },
+    "render_audio_rules": {
+      "value_type": "RENDER_AUDIO_RULES",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "RENDER_AUDIO_RULES"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "render_safe_audio": {
+                "type": "string",
+                "enum": [
+                  "ALLOWED",
+                  "PROHIBITED",
+                  "UNKNOWN",
+                  "NOT_APPLICABLE"
+                ]
+              },
+              "music_allowed": {
+                "type": "string",
+                "enum": [
+                  "ALLOWED",
+                  "PROHIBITED",
+                  "UNKNOWN",
+                  "NOT_APPLICABLE"
+                ]
+              },
+              "sfx_allowed": {
+                "type": "string",
+                "enum": [
+                  "ALLOWED",
+                  "PROHIBITED",
+                  "UNKNOWN",
+                  "NOT_APPLICABLE"
+                ]
+              },
+              "max_sfx_density": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "NONE",
+                      "LOW",
+                      "MEDIUM",
+                      "HIGH"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "instructions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "minItems": 0,
+                "maxItems": 20
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "render_safe_audio",
+              "music_allowed",
+              "sfx_allowed",
+              "max_sfx_density",
+              "instructions"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "audio_plan",
+        "render",
+        "qc"
+      ],
+      "unknown_blocks": [
+        "audio_plan",
+        "render",
+        "qc"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "platform_native_audio_rules": {
+      "value_type": "PLATFORM_NATIVE_AUDIO_RULES",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "PLATFORM_NATIVE_AUDIO_RULES"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "TIKTOK": {
+                "type": "string",
+                "enum": [
+                  "ALLOWED",
+                  "PROHIBITED",
+                  "UNKNOWN",
+                  "NOT_APPLICABLE"
+                ]
+              },
+              "INSTAGRAM_REELS": {
+                "type": "string",
+                "enum": [
+                  "ALLOWED",
+                  "PROHIBITED",
+                  "UNKNOWN",
+                  "NOT_APPLICABLE"
+                ]
+              },
+              "YOUTUBE_SHORTS": {
+                "type": "string",
+                "enum": [
+                  "ALLOWED",
+                  "PROHIBITED",
+                  "UNKNOWN",
+                  "NOT_APPLICABLE"
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "TIKTOK",
+              "INSTAGRAM_REELS",
+              "YOUTUBE_SHORTS"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "structured",
+      "consumers": [
+        "audio_plan",
+        "posting"
+      ],
+      "unknown_blocks": [
+        "audio_plan",
+        "posting"
+      ],
+      "campaign_metadata_mirror": null,
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": true
+    },
+    "last_verified_at": {
+      "value_type": "TIMESTAMP",
+      "typed_value_schema": {
+        "type": "object",
+        "properties": {
+          "value_type": {
+            "const": "TIMESTAMP"
+          },
+          "value": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value_type",
+          "value"
+        ]
+      },
+      "unit": "none",
+      "shape": "scalar",
+      "consumers": [
+        "allocation",
+        "rules_normalization"
+      ],
+      "unknown_blocks": [],
+      "campaign_metadata_mirror": "last_verified_at",
+      "contributes_to_payout_math": false,
+      "contributes_to_posting_or_qc": false
+    }
+  },
+  "cross_rule_invariants": {
+    "clip_length_min_max": "when both KNOWN, clip_length_min_seconds <= clip_length_max_seconds",
+    "campaign_time_order": "when KNOWN: start_at < end_at; recommended publication must also be before deadline_at when deadline_at KNOWN",
+    "budget_bounds": "when total_budget and remaining_budget are both KNOWN, remaining_budget <= total_budget",
+    "current_mirror": "provider,campaign_url,external_campaign_id,status,start_at,end_at,deadline_at,last_verified_at are current-query mirrors of campaigns.terms_snapshot_id only; historical decisions read immutable rule rows",
+    "native_audio": "platform_native_audio_rules is per-platform ALLOWED|PROHIBITED|UNKNOWN|NOT_APPLICABLE; UNKNOWN/PROHIBITED cannot be escalated by planning/posting snapshots",
+    "account_follower_range": "when eligible_account_requirements min_followers and max_followers are both non-null, min_followers <= max_followers"
+  },
+  "rule_set_seal_contract": {
+    "required_rule_count": 32,
+    "seal_table": "campaign_rule_set_commits",
+    "seal_function": "honor_seal_campaign_rule_set(uuid,uuid,integer)",
+    "hash": "DB-computed SHA-256 of PostgreSQL jsonb canonical text for an array ordered by rule_key; each element contains rule_key, knowledge_state, typed_value, evidence_snapshot_id, evidence_locator, verified_at, verified_by, schema_version",
+    "temporal_order": [
+      "evidence snapshot captured_at/created_at <= verified_at for KNOWN/NOT_APPLICABLE",
+      "verified_at <= rule-set committed_at",
+      "rule-set committed_at <= consuming DB-authoritative action time"
+    ],
+    "post_seal_mutation": "no INSERT/UPDATE/DELETE of campaign_rule_items for sealed tuple",
+    "reactivation": "a previously superseded snapshot may never become current again; provider reversion requires a newly captured/reverified snapshot and new seal",
+    "evidence_record_time": "campaign_terms_snapshots.created_at is DB-authoritative; captured_at is external factual evidence time; both must be <= verified_at for KNOWN/NOT_APPLICABLE"
+  },
+  "restriction_semantics_artifact": "HONOR_CAMPAIGN_RESTRICTION_SEMANTICS.json"
+}

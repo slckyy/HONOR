@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honor.local/jsonschema/account_health.signals.v1.json",
+  "title": "account_health.signals.v1",
+  "x-honor-contract-class": "STRUCTURED_FROZEN_V1",
+  "type": "object",
+  "properties": {
+    "platform_status": {
+      "type": "string",
+      "enum": [
+        "OK",
+        "WARNING",
+        "RESTRICTED",
+        "UNKNOWN"
+      ]
+    },
+    "posting_available": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "recent_failures_24h": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "owner_note": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "platform_status",
+    "posting_available",
+    "recent_failures_24h",
+    "owner_note"
+  ],
+  "x-honor-writer": "api|worker"
+}

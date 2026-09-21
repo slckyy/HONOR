@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "contract_name": "HONOR_RENDER_SAFE_AUDIO_ASSET_RIGHTS_V1",
+  "automatic_embedding_eligibility": {
+    "active": true,
+    "audio_assets.render_safe": true,
+    "allowed_uses.render_safe": true,
+    "render_safe_authorities_equal": true,
+    "allowed_uses.commercial_use": true,
+    "allowed_uses.derivative_edit": true,
+    "target_platform_in_allowed_uses.platforms": true,
+    "allowed_uses.campaign_restriction": null,
+    "attribution_required": false,
+    "license_evidence_required": "if true, license_evidence_object_key and license_evidence_sha256 must both be non-null immutable fields"
+  },
+  "unknown_rule": "Missing, malformed, false, contradictory, campaign-restricted or attribution-required rights never grant V1 automatic embedding.",
+  "campaign_restriction_rule": "Any non-null allowed_uses.campaign_restriction is ineligible in V1 because no approved deterministic compatibility evaluator exists.",
+  "attribution_rule": "Attribution-required assets may remain catalogued but are ineligible for V1 automated render-safe embedding; no implicit posting attribution workflow is assumed.",
+  "license_evidence_rule": "license_url_or_reference is the frozen human-readable canonical license reference. When allowed_uses.license_evidence_required=true, immutable license_evidence_object_key + license_evidence_sha256 are mandatory evidence; provenance_notes alone never satisfies the requirement.",
+  "checkpoints": [
+    "AUDIO_PLAN_COMMIT",
+    "PLANNED_TO_RENDERING",
+    "RENDER_MANIFEST_ADMISSION"
+  ],
+  "manifest_verification": [
+    "audio_asset_id",
+    "kind",
+    "sha256",
+    "license_url_or_reference as license_reference",
+    "exact membership in committed audio plan",
+    "current eligibility"
+  ],
+  "asset_versioning": {
+    "immutable_material_fields": [
+      "id",
+      "kind",
+      "storage_object_key",
+      "sha256",
+      "license_name",
+      "license_url_or_reference",
+      "license_evidence_object_key",
+      "license_evidence_sha256",
+      "provenance_notes",
+      "render_safe",
+      "attribution_required",
+      "allowed_uses",
+      "created_at"
+    ],
+    "revocation": "active TRUE -> FALSE only",
+    "reactivation": "forbidden in place; create a new asset id/version",
+    "historical_rule": "Existing render manifests retain immutable asset id/SHA/license provenance even after later deactivation."
+  }
+}
