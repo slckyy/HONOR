@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 
 from .auth import require_owner
+from .c02_api import router as c02_router
 from .db import database_ready
 from .errors import (
     HonorError,
@@ -22,7 +23,7 @@ from .storage import storage_ready
 def create_app() -> FastAPI:
     app = FastAPI(
         title="HONOR V1 Internal API",
-        version="0.1.0-c01",
+        version="0.2.0-c02",
         docs_url=None,
         redoc_url=None,
         openapi_url=None,
@@ -32,6 +33,7 @@ def create_app() -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_error_handler)
     app.add_exception_handler(HTTPException, http_error_handler)
     app.add_exception_handler(Exception, unhandled_error_handler)
+    app.include_router(c02_router)
 
     @app.get("/healthz")
     async def healthz():
