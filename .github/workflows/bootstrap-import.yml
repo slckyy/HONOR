@@ -14,10 +14,10 @@ jobs:
         run: |
           set -euo pipefail
           cat bootstrap/chunk_* > /tmp/honor.b64
-          base64 -d /tmp/honor.b64 > /tmp/honor.zip
+          base64 -d /tmp/honor.b64 > /tmp/honor.tar.xz
           rm -rf /tmp/honor-import
           mkdir -p /tmp/honor-import
-          unzip -q /tmp/honor.zip -d /tmp/honor-import
+          tar -xJf /tmp/honor.tar.xz -C /tmp/honor-import
           rsync -a --delete --exclude .git --exclude .github/workflows/bootstrap-import.yml /tmp/honor-import/ ./
           rm -rf bootstrap
       - name: Commit imported canonical tree
