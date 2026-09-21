@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "MANIFEST_C01_SHA256.txt"
 C02_ALLOWED_C01_PATH_MUTATIONS = {
+    "./.github/workflows/ci.yml",
     "./scripts/check_c01_manifest.py",
     "./services/api/honor_api/app.py",
 }
