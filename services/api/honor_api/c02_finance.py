@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import StrEnum
@@ -60,6 +60,9 @@ class FinanceSummary:
     actual_reconciled_spend: Decimal
     unreconciled_cost_count: int
     costs_complete: bool
+    as_of: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    infrastructure_spend: Decimal = Decimal("0")
+    polli_spend: Decimal = Decimal("0")
 
     @property
     def confirmed_gross_revenue(self) -> Decimal:
@@ -98,6 +101,27 @@ class FinanceSummary:
             "completeness": "COMPLETE" if self.costs_complete else "INCOMPLETE_UNKNOWN",
         }
 
+    def to_openapi_dict(self) -> dict[str, Any]:
+        net = self.net_profit_booked
+        return {
+            "as_of": self.as_of.isoformat(),
+            "currency": "USD",
+            "accrued_unverified_usd": usd(self.accrued_unverified),
+            "approved_usd": usd(self.approved),
+            "withdrawable_usd": usd(self.withdrawable),
+            "withdrawn_usd": usd(self.withdrawn),
+            "gross_campaign_revenue_usd": usd(self.confirmed_gross_revenue),
+            "infrastructure_api_spend_usd": usd(self.infrastructure_spend),
+            "polli_voice_reasoning_spend_usd": usd(self.polli_spend),
+            "lifetime_revenue_usd": usd(self.confirmed_gross_revenue),
+            "lifetime_spend_usd": usd(self.booked_spend),
+            "net_profit_usd": usd(net) if net is not None else None,
+            "monthly_target_usd": usd(TARGET_USD),
+            "monthly_target_progress_usd": usd(self.confirmed_gross_revenue),
+            "net_profit_truth_state": "FACT" if net is not None else "INCOMPLETE_UNKNOWN",
+            "self_funded_state": self.self_funded_state.value,
+        }
+
 
 def summarize_finance(earnings: list[dict[str, Any]], costs: list[dict[str, Any]]) -> FinanceSummary:
     buckets = {state.value: D("0") for state in EarningState}
@@ -109,15 +133,23 @@ def summarize_finance(earnings: list[dict[str, Any]], costs: list[dict[str, Any]
     booked = D("0")
     actual = D("0")
     unreconciled = 0
+    infrastructure = D("0")
+    polli = D("0")
     for row in costs:
         service = row.get("service")
         estimate = D(row.get("estimated_cost_usd", "0"))
         actual_cost = row.get("actual_cost_usd")
         if service == "PREPAID_FUNDING":
-            booked = D(booked + D(actual_cost if actual_cost is not None else estimate))
-            actual = D(actual + D(actual_cost if actual_cost is not None else "0"))
+            # A prepaid purchase is cash/governor exposure, not an additional
+            # economic operating expense.  Usage rows are booked once below.
             continue
-        booked = D(booked + D(actual_cost if actual_cost is not None else estimate))
+        amount = D(actual_cost if actual_cost is not None else estimate)
+        booked = D(booked + amount)
+        category = str(row.get("cost_category", ""))
+        if category == "INFRASTRUCTURE" or service in {"R2", "REDIS", "POSTGRES", "INFRASTRUCTURE"}:
+            infrastructure = D(infrastructure + amount)
+        if category in {"POLLI_VOICE", "AI_REASONING"} or service in {"POLLI_VOICE", "AI_REASONING", "POLLI"}:
+            polli = D(polli + amount)
         if actual_cost is None:
             unreconciled += 1
         else:
@@ -131,22 +163,31 @@ def summarize_finance(earnings: list[dict[str, Any]], costs: list[dict[str, Any]
         actual_reconciled_spend=actual,
         unreconciled_cost_count=unreconciled,
         costs_complete=unreconciled == 0,
+        as_of=datetime.now(timezone.utc),
+        infrastructure_spend=infrastructure,
+        polli_spend=polli,
     )
 
 
 def cost_summary_from_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     prepaid = D("0")
+    cash_spend = D("0")
     actual_spend = D("0")
     estimated_unreconciled = D("0")
     committed = D("0")
     queued = D("0")
-    groups: dict[str, Decimal] = {}
+    groups: dict[str, dict[str, Decimal | None]] = {}
     for row in rows:
         service = str(row.get("service"))
         estimate = D(row.get("estimated_cost_usd", "0"))
         actual = row.get("actual_cost_usd")
         if service == "PREPAID_FUNDING":
             prepaid = D(prepaid + D(actual if actual is not None else estimate))
+            cash_spend = D(cash_spend + D(actual if actual is not None else estimate))
+            group = groups.setdefault(service, {"estimated": D("0"), "actual": None})
+            group["estimated"] = D(group["estimated"] + estimate)
+            if actual is not None:
+                group["actual"] = D((group["actual"] or D("0")) + D(actual))
             continue
         amount = D(actual if actual is not None else estimate)
         if actual is None:
@@ -157,18 +198,25 @@ def cost_summary_from_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 queued = D(queued + amount)
         else:
             actual_spend = D(actual_spend + amount)
-        groups[service] = D(groups.get(service, D("0")) + amount)
-    exposure = D(actual_spend + committed + queued)
+        group = groups.setdefault(service, {"estimated": D("0"), "actual": None})
+        group["estimated"] = D(group["estimated"] + estimate)
+        if actual is not None:
+            group["actual"] = D((group["actual"] or D("0")) + D(actual))
     remaining_credit = D(max(Decimal("0"), prepaid - actual_spend))
+    # Only queued work above the remaining prepaid credit is unfunded.  Cash
+    # purchases are already counted in full and are never counted again when
+    # their credit is consumed.
+    admitted_unfunded = D(max(Decimal("0"), queued - remaining_credit))
+    exposure = D(cash_spend + committed + admitted_unfunded)
+    now = datetime.now(timezone.utc)
     return {
-        "cash_spend_counted_usd": usd(actual_spend),
+        "as_of": now.isoformat(),
+        "month": now.strftime("%Y-%m"),
+        "cash_spend_counted_usd": usd(cash_spend),
         "unpaid_committed_usd": usd(committed),
-        "admitted_queued_unfunded_usd": usd(queued),
+        "admitted_queued_unfunded_usd": usd(admitted_unfunded),
         "prepaid_funding_purchased_usd": usd(prepaid),
         "prepaid_credit_remaining_usd": usd(remaining_credit),
-        "booked_operating_cost_usd": usd(D(actual_spend + estimated_unreconciled)),
-        "actual_reconciled_cost_usd": usd(actual_spend),
-        "estimated_unreconciled_cost_usd": usd(estimated_unreconciled),
         "governor_exposure_usd": usd(exposure),
         "projected_month_end_usd": usd(exposure),
         "remaining_hard_cap_usd": usd(D(HARD - exposure)),
@@ -177,7 +225,7 @@ def cost_summary_from_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "hard_cap_usd": usd(HARD),
         "governor_state": governor_state(exposure).value,
         "groups": [
-            {"key": key, "amount_usd": usd(value), "truth_label": "FACT"}
+            {"group": key, "estimated_usd": usd(value["estimated"]), "actual_usd": usd(value["actual"]) if value["actual"] is not None else None, "confidence": "HIGH" if value["actual"] is not None else "LOW"}
             for key, value in sorted(groups.items())
         ],
     }

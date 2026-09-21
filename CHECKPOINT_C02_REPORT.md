@@ -1,65 +1,67 @@
-# HONOR C02 Checkpoint Report
+# HONOR C02 checkpoint handoff report
 
-## Review status
+This document is a builder handoff for Checkpoint Manager review. It is not an approval or PASS declaration.
 
-READY FOR CHECKPOINT REVIEW. This is a builder handoff, not a Checkpoint Manager PASS declaration.
-
-## Frozen repository controls
+## Frozen repository identity
 
 - Repository: `slckyy/HONOR`
-- Working branch: `checkpoint/c02`
-- Frozen base branch: `main`
-- Frozen base commit: `dbd7c97720f8b82d55420317adb44edff2ccfd86`
-- Pull request: `#1`, open and targeting `main`
-- C01 baseline CI: run `35654987537`, successful
-- Merge status: not merged
+- Final branch: `checkpoint/c02`
+- Base C01 SHA: `dbd7c97720f8b82d55420317adb44edff2ccfd86`
+- Final C02 commit SHA: `PENDING_FINAL_COMMIT_SHA`
+- PR: `#1`, `checkpoint/c02 -> main`, open and not merged
+- Frozen reviewed predecessor: `dadb95f646566d09518d6c6621616b58552fd728`
+- Workflow: `C02 CI` (retains every C01 gate)
+- Exact final Actions run ID: `PENDING_FINAL_ACTIONS_RUN_ID`
+- Final workflow conclusion: `PENDING_FINAL_ACTIONS_CONCLUSION`
 
-## Scope implemented
+## Verification evidence
 
-C02 adds the campaign/financial data-layer behavior permitted by the frozen C00 contracts while preserving the C01 foundation:
+- C01 baseline run `35654987537`: succeeded on the frozen C01 checkpoint.
+- Python: `PENDING_FINAL_PASSED` passed, `PENDING_FINAL_SKIPPED` skipped, `PENDING_FINAL_FAILED` failed.
+- C02 integration tests: `PENDING_C02_INTEGRATION_RESULT` (campaign/rules/seal/activation, rights versions, uploads, submissions, analytics, payouts, finance/cost, and idempotency through `honor_app`).
+- Web tests: `PENDING_WEB_RESULT`.
+- Typecheck: `PENDING_TYPECHECK_RESULT`.
+- Next build: `PENDING_NEXT_BUILD_RESULT`.
+- API Docker build: `PENDING_API_DOCKER_RESULT`.
+- Worker Docker build: `PENDING_WORKER_DOCKER_RESULT`.
+- Web public-config Docker build: `PENDING_WEB_DOCKER_RESULT`.
+- Development Compose config: `PENDING_DEV_COMPOSE_RESULT`.
+- Production Compose config: `PENDING_PROD_COMPOSE_RESULT`.
+- Authenticated Redis: `PENDING_REDIS_RESULT`.
+- Celery foundation: `PENDING_CELERY_RESULT`.
+- C00 drift, C01 regression, secret scan, lock checks, and C02 manifest: `PENDING_STATIC_RESULT`.
 
-- exact 32-key campaign rule inventory, KNOWN/UNKNOWN/NOT_APPLICABLE semantics, typed-value checks, cross-field checks, deterministic sealing hash, canonical restriction placement, and owner-URL SSRF rejection;
-- current-version source-rights selection, contiguous non-forking version checks, stage authorization, expiration handling, platform/duration restrictions, and account eligibility UNKNOWN blocking;
-- deterministic earning lifecycle validation, confirmed-revenue aggregation without state double counting, tri-state self-funded calculation, incomplete-cost truth handling, exact six-decimal output, and Month-1 cost-governor summaries;
-- owner-authenticated C02 campaign, payout, finance, and cost API routing through the existing private FastAPI boundary;
-- deterministic Polli finance/cost result envelopes backed by authoritative database rows;
-- focused C02 unit coverage alongside the complete retained C01 verification suite.
+## C02 implementation
 
-No C01 redesign, automated social posting, media generation, intelligence, C03+ workflow, paid provider dependency, or secret was added.
+- All implemented C02 routes validate requests and responses against `packages/contracts/openapi/HONOR_OPENAPI.json`; frozen discriminators are `method` and `event_kind`.
+- Campaign manual/owner-URL/API intake creates an immutable terms snapshot, all 32 registry-backed rule facts, seals via the C01 database function, activates only when permitted, and returns exact `202 CampaignImportAccepted`.
+- Rule validation consumes `HONOR_CAMPAIGN_RULE_REGISTRY.json` and the frozen per-key schemas; complex values are not re-registered by hand.
+- Source import/read records authoritative provenance and rights evidence, supports all three frozen source methods, and never claims READY without satisfied ingestion/rights conditions.
+- Rights versions are committed through `honor_commit_source_rights_version`, contiguous/non-forking, immutable, action-time selected, and stage-authorized.
+- Upload intents/completion use the C01 storage abstraction with owner scope, object-key safety, expiry, exact size/SHA-256 verification, and replay protection.
+- Submissions prove `submission -> post -> clip -> campaign` lineage and use the canonical submission graph.
+- Analytics observations preserve null metrics and complete only legal due/missed check-ins.
+- Payout CREATE and TRANSITION implement the frozen earning graph and DB function transition path with immutable evidence.
+- Mutating routes use an advisory-locked idempotency preflight before domain writes; mismatched reuse returns `IDEMPOTENCY_KEY_REUSED` and missing keys return `IDEMPOTENCY_KEY_REQUIRED`.
+- Finance and cost summaries use exact frozen field names, six-decimal USD strings, current/lifetime distinctions, prepaid cash-governor accounting, and no prepaid economic double count.
+- Polli C02 handlers are wired for finance, costs, target progress, campaign performance, fact evidence, and account performance and remain registry-validated/read-only.
 
-## Security and integrity notes
+## Migrations and events
 
-- Browser traffic remains `browser -> Next.js BFF -> private FastAPI`.
-- Owner authentication and transaction-local database owner context remain mandatory.
-- URL intake rejects credentials, local/private/link-local/reserved destinations, and unsupported schemes.
-- Campaign UNKNOWN values do not manufacture permission.
-- Source-rights evaluation uses the newest applicable evidence at action time and never falls back after a later restrictive version.
-- Financial calculations use exact decimal arithmetic; unknown material costs yield `UNKNOWN_NOT_VERIFIED`, never a fabricated zero or false result.
-- The C01 manifest remains enforced with only the two declared C02 integration mutations.
-- `MANIFEST_C02_SHA256.txt` is an exact allowlist of every regular release file except itself.
+- Migrations added: none; frozen `0001`/`0002` checksums are unchanged.
+- C02 events are emitted only after successful underlying transactions; source ingest is not falsely reported READY.
+- Event/job durability uses the existing C01 Postgres/Celery foundation.
 
-## Verification commands
+## Operational accounting
 
-```text
-python scripts/static_acceptance.py
-python scripts/check_lockfiles.py
-python scripts/check_c01_manifest.py
-python scripts/check_c02_manifest.py
-python -m pytest -q -rs
-npm ci --workspaces --include-workspace-root --ignore-scripts
-git diff --exit-code -- package-lock.json requirements.lock
-npm run test:web
-npm run typecheck
-npm run build
-docker build -t honor-api:c02 -f services/api/Dockerfile .
-docker build -t honor-worker:c02 -f services/worker/Dockerfile .
-./scripts/test_web_public_config_image.sh
-docker compose -f infrastructure/docker/compose.development.yml config
-docker compose -f infrastructure/docker/compose.production.yml --profile admin config
-```
+- Spend requested: `$0` paid services; no secrets or credentials were requested.
+- Governor exposure: derived from the exact cost-ledger formula, with full Month-1 prepaid cash counted at purchase and remaining credit shielding only queued unfunded exposure.
+- Mocks/fixtures remaining: deterministic campaign normalization fixture and local/test storage adapter only; no LLM is required.
+- Live integrations not verified: real provider APIs, real R2 production credentials, and social-platform submission APIs remain owner-controlled adapters.
 
-The canonical hosted result is the final successful GitHub Actions run attached to the exact final `checkpoint/c02` commit reviewed with this report.
+## Release and limitations
 
-## Release artifact
-
-`HONOR_C02_REPO.zip` is generated from the exact final branch commit. It excludes `.git`, `node_modules`, virtual environments, build/test caches, `.next`, `__pycache__`, `.pyc`/`.pyo` files, Docker layers, secrets, and credentials. After extraction, `python scripts/check_c02_manifest.py` verifies the complete release inventory and content hashes.
+- `HONOR_C02_REPO.zip` is generated from the exact final branch commit and excludes `.git`, dependencies, virtual environments, caches, `.next`, Python bytecode, Docker layers, secrets, and credentials.
+- `MANIFEST_C02_SHA256.txt` is the exact release inventory and is checked by `scripts/check_c02_manifest.py`.
+- Known limitations: provider adapters remain unavailable unless configured; no automated provider submission is performed; later-domain C03+ tools remain unavailable by design.
+- No-secrets attestation: repository scan and artifact packaging contain no credentials, tokens, private keys, or secret runtime files.

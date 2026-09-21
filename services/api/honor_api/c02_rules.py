@@ -7,12 +7,29 @@ from enum import StrEnum
 from hashlib import sha256
 import ipaddress
 import json
+from pathlib import Path
 import socket
 from typing import Any
 from urllib.parse import urlparse
 
+from jsonschema import Draft202012Validator, FormatChecker
 
-CANONICAL_RULE_KEYS = (
+
+_ROOT = Path(__file__).resolve().parents[3]
+_REGISTRY = json.loads((_ROOT / "docs/architecture/c00-approved/HONOR_CAMPAIGN_RULE_REGISTRY.json").read_text())
+_RULE_KEYS = _REGISTRY["keys"]
+CANONICAL_RULE_KEYS = tuple(_RULE_KEYS.keys())
+
+# Kept as a compatibility view for callers; the frozen registry remains the
+# only source of truth for key/value types and per-key schemas.
+RULE_VALUE_TYPES = {key: value["value_type"] for key, value in _RULE_KEYS.items()}
+
+_SCHEMA_VALIDATORS = {
+    key: Draft202012Validator(value["typed_value_schema"], format_checker=FormatChecker())
+    for key, value in _RULE_KEYS.items()
+}
+
+_LEGACY_CANONICAL_RULE_KEYS = (
     "provider",
     "campaign_url",
     "external_campaign_id",
@@ -47,7 +64,7 @@ CANONICAL_RULE_KEYS = (
     "last_verified_at",
 )
 
-RULE_VALUE_TYPES = {
+_LEGACY_RULE_VALUE_TYPES = {
     "provider": "STRING",
     "campaign_url": "STRING",
     "external_campaign_id": "STRING",
@@ -142,42 +159,20 @@ def _parse_time(value: Any) -> datetime:
 
 
 def validate_typed_value(rule_key: str, typed_value: dict[str, Any]) -> None:
-    if rule_key not in RULE_VALUE_TYPES:
+    if rule_key not in _SCHEMA_VALIDATORS:
         raise ValueError("non-canonical campaign rule key")
-    expected = RULE_VALUE_TYPES[rule_key]
-    if typed_value.get("value_type") != expected:
-        raise ValueError("campaign rule typed value type mismatch")
-    if "value" not in typed_value:
-        raise ValueError("typed value missing value")
-    value = typed_value["value"]
-    if expected in {"STRING", "CAMPAIGN_STATUS", "COMPENSATION_MODEL"} and not isinstance(value, str):
-        raise ValueError("string rule value required")
-    if expected == "INTEGER" and (not isinstance(value, int) or value < 0):
-        raise ValueError("integer rule value required")
-    if expected in {"RATE", "MONEY_USD", "DURATION_SECONDS"} and _decimal(value) < 0:
-        raise ValueError("non-negative decimal rule value required")
-    if expected == "TIMESTAMP":
-        _parse_time(value)
-    if expected in {"PLATFORMS", "REGIONS", "STRING_ARRAY"}:
-        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-            raise ValueError("string array rule value required")
-    if expected == "RESTRICTION_SET":
-        clauses = value.get("clauses") if isinstance(value, dict) else None
-        if not isinstance(clauses, list):
-            raise ValueError("restriction rule requires clauses")
-        seen: set[str] = set()
-        for clause in clauses:
-            triple = (clause.get("code"), clause.get("effect"), clause.get("scope"))
-            if triple not in ALLOWED_RESTRICTION_PLACEMENT.get(rule_key, set()):
-                raise ValueError("restriction clause is not valid for rule key")
-            if clause["code"] in seen:
-                raise ValueError("duplicate restriction code")
-            seen.add(clause["code"])
+    errors = sorted(_SCHEMA_VALIDATORS[rule_key].iter_errors(typed_value), key=lambda e: list(e.path))
+    if errors:
+        raise ValueError(f"invalid frozen schema for {rule_key}: {errors[0].message}")
 
 
 def validate_rule(rule: NormalizedRule) -> None:
     if rule.rule_key not in CANONICAL_RULE_KEYS:
         raise ValueError("non-canonical campaign rule key")
+    # OWNER_MANUAL was used by pre-C02 helper callers; persisted DB writes use
+    # the frozen OWNER enum value exclusively.
+    if rule.verified_by not in {"API", "IMPORTER", "OWNER", "BUILDER", "OWNER_MANUAL"}:
+        raise ValueError("verified_by must use the frozen enum")
     if rule.knowledge_state == KnowledgeState.UNKNOWN:
         if rule.typed_value is not None:
             raise ValueError("UNKNOWN rule must have null typed value")
@@ -212,6 +207,10 @@ def validate_complete_rule_set(rules: list[NormalizedRule]) -> None:
     if total.typed_value and remaining.typed_value:
         if _decimal(remaining.typed_value["value"]) > _decimal(total.typed_value["value"]):
             raise ValueError("remaining budget exceeds total budget")
+    start = by_key["start_at"].typed_value
+    end = by_key["end_at"].typed_value
+    if start and end and _parse_time(start["value"]) >= _parse_time(end["value"]):
+        raise ValueError("campaign start_at must precede end_at")
 
 
 def seal_rule_set_hash(rules: list[NormalizedRule]) -> str:
