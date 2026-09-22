@@ -242,9 +242,15 @@ def _analytics_observation(row: Any) -> dict[str, Any]:
 
 
 @router.get("/analytics/due")
-async def list_due_analytics(owner: str = Depends(require_owner), limit: int = Query(default=50, ge=1, le=100)):
-    async with owner_transaction(owner) as conn: rows = await conn.fetch("SELECT * FROM analytics_checkins WHERE status IN ('DUE','MISSED') AND due_at<=statement_timestamp() ORDER BY due_at,id LIMIT $1", limit)
-    items = [{"id":str(r["id"]),"post_id":str(r["post_id"]),"checkin_type":str(r["checkin_type"]),"due_at":_iso(r["due_at"]),"completed_at":_iso(r["completed_at"]),"status":str(r["status"]),"created_at":_iso(r["created_at"]),"updated_at":_iso(r["updated_at"])} for r in rows]; result = {"items":items,"page":{"next_cursor":None,"limit":limit,"has_more":False}}; validate_contract("AnalyticsDueList", result); return result
+async def list_due_analytics(owner: str = Depends(require_owner), limit: int = Query(default=50, ge=1, le=100), cursor: str | None = Query(default=None), status: str | None = Query(default=None)):
+    decoded = _cursor_decode(cursor)
+    async with owner_transaction(owner) as conn:
+        rows = await conn.fetch("SELECT * FROM analytics_checkins WHERE status IN ('DUE','MISSED') AND due_at<=statement_timestamp() AND ($1::checkin_status_enum IS NULL OR status=$1::checkin_status_enum) AND ($2::timestamptz IS NULL OR (due_at,id)>($2::timestamptz,$3::uuid)) ORDER BY due_at,id LIMIT $4", status, decoded[0] if decoded else None, decoded[1] if decoded else None, limit + 1)
+    has_more = len(rows) > limit
+    page_rows = rows[:limit]
+    next_cursor = _cursor_encode(page_rows[-1]["due_at"], page_rows[-1]["id"]) if has_more else None
+    items = [{"id":str(r["id"]),"post_id":str(r["post_id"]),"checkin_type":str(r["checkin_type"]),"due_at":_iso(r["due_at"]),"completed_at":_iso(r["completed_at"]),"status":str(r["status"]),"created_at":_iso(r["created_at"]),"updated_at":_iso(r["updated_at"])} for r in page_rows]
+    result = {"items":items,"page":{"next_cursor":next_cursor,"limit":limit,"has_more":has_more}}; validate_contract("AnalyticsDueList", result); return result
 
 
 @router.post("/analytics/check-ins", status_code=201)
@@ -259,7 +265,11 @@ async def record_analytics_checkin(request: Request, owner: str = Depends(requir
             checkin = await conn.fetchrow("SELECT * FROM analytics_checkins WHERE id=$1::uuid AND post_id=$2::uuid FOR UPDATE", body["checkin_id"], body["post_id"])
             if checkin is None: raise HonorError(409, "CONFLICT", "Check-in does not belong to post.")
             if str(checkin["status"]) not in {"DUE", "MISSED"}: raise HonorError(409, "CONFLICT", "Check-in is not in a completable state.")
-        oid = str(uuid4()); await conn.execute("INSERT INTO analytics_observations(id,post_id,observed_at,checkin_id,views,qualified_views,likes,comments,shares,saves,watch_time_ms,average_watch_duration_ms,completed_views,completion_rate_ppm,follower_delta,avg_watch_pct,evidence_method,raw_payload_object_key) VALUES($1::uuid,$2::uuid,$3,$4::uuid,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::analytics_evidence_method_enum,(SELECT object_key FROM uploads WHERE id=$18::uuid AND owner_user_id=$19::uuid))", oid, body["post_id"], body["observed_at"], body["checkin_id"], body["views"], body["qualified_views"], body["likes"], body["comments"], body["shares"], body["saves"], body["watch_time_ms"], body["average_watch_duration_ms"], body["completed_views"], body["completion_rate_ppm"], body["follower_delta"], body["avg_watch_pct"], body["evidence_method"], body["evidence_upload_id"], owner)
+        if body.get("evidence_upload_id"):
+            evidence_upload = await conn.fetchrow("SELECT state FROM uploads WHERE id=$1::uuid AND owner_user_id=$2::uuid", body["evidence_upload_id"], owner)
+            if evidence_upload is None: raise HonorError(409, "CONFLICT", "Evidence upload is not owned by this owner.")
+            if str(evidence_upload["state"]) != "VERIFIED": raise HonorError(409, "CONFLICT", "Evidence upload is not verified.")
+        oid = str(uuid4()); await conn.execute("INSERT INTO analytics_observations(id,post_id,observed_at,checkin_id,views,qualified_views,likes,comments,shares,saves,watch_time_ms,average_watch_duration_ms,completed_views,completion_rate_ppm,follower_delta,avg_watch_pct,evidence_method,raw_payload_object_key) VALUES($1::uuid,$2::uuid,$3,$4::uuid,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::analytics_evidence_method_enum,(SELECT object_key FROM uploads WHERE id=$18::uuid AND owner_user_id=$19::uuid AND state='VERIFIED'))", oid, body["post_id"], body["observed_at"], body["checkin_id"], body["views"], body["qualified_views"], body["likes"], body["comments"], body["shares"], body["saves"], body["watch_time_ms"], body["average_watch_duration_ms"], body["completed_views"], body["completion_rate_ppm"], body["follower_delta"], body["avg_watch_pct"], body["evidence_method"], body["evidence_upload_id"], owner)
         if checkin is not None: await conn.execute("UPDATE analytics_checkins SET status='COMPLETED',completed_at=statement_timestamp(),updated_at=statement_timestamp() WHERE id=$1::uuid", body["checkin_id"])
         obs = await conn.fetchrow("SELECT * FROM analytics_observations WHERE id=$1::uuid", oid); response = {"observation":_analytics_observation(obs),"checkin":None}
         if checkin is not None:
