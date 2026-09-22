@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 
 from .auth import require_owner
@@ -17,7 +17,9 @@ from .errors import (
 )
 from .redis_client import redis_ready
 from .request_context import request_context
-from .storage import storage_ready
+from .storage import LocalStorage, storage, storage_ready
+from .config import get_settings
+from urllib.parse import unquote
 
 
 def create_app() -> FastAPI:
@@ -34,6 +36,19 @@ def create_app() -> FastAPI:
     app.add_exception_handler(HTTPException, http_error_handler)
     app.add_exception_handler(Exception, unhandled_error_handler)
     app.include_router(c02_router)
+
+    @app.put("/__dev/storage/{encoded_key:path}", include_in_schema=False)
+    async def dev_storage_put(encoded_key: str, request: Request):
+        """Test/development-only transport for LocalStorage upload intents."""
+        if get_settings().HONOR_ENV.lower() == "production":
+            raise HTTPException(status_code=404, detail="not found")
+        selected = storage()
+        if not isinstance(selected, LocalStorage):
+            raise HTTPException(status_code=404, detail="not found")
+        key = unquote(encoded_key)
+        data = await request.body()
+        selected.put(key, data, request.headers.get("content-type", "application/octet-stream"))
+        return {"ok": True}
 
     @app.get("/healthz")
     async def healthz():

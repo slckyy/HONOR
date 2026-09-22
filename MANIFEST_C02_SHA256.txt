@@ -243,11 +243,11 @@ fa2c1b3e68d5bc9bb4c91946bfb0855b044d4324bf22531b94448f8083276004  ./scripts/prov
 e8153989a5ad057032bc51bcd7f744f2243d11359051031a226da72c9c23e7cd  ./scripts/test_web_public_config_image.sh
 72620972162f9e0e9b47d1e450c976aef3aa3bb67c4b1f5c1e5dbd3a8b166b3c  ./services/api/Dockerfile
 0706b6ff3090922fed77f3cf6bb4e2534ad980b8473d5434b71e9a4add892627  ./services/api/honor_api/__init__.py
-3a663dcbc9eb9cd2d18bafaf03d944302075585053607085625b8359c0ad650c  ./services/api/honor_api/app.py
+6761c62849990e4df326f343be255cacc48dc8e9c65b47cd5cd765a5cef64a7e  ./services/api/honor_api/app.py
 02425b888a24d97d543f48bb04cf18a38f1b76d9d85e983c6691d0618dba1b57  ./services/api/honor_api/auth.py
-81c2dd9e53ddb95ff33777935d2a91e49f13d1b74a4349d0ec9cca2221fc0e7f  ./services/api/honor_api/c02_api.py
+660def6bb9e7d91e0a215b721925da7aff9149d9b94ee3edfd144243c0d5b478  ./services/api/honor_api/c02_api.py
 e2fc5fdd66dd079973c00e9e8bddcf9c397578745df5df332b466d837207d33f  ./services/api/honor_api/c02_contracts.py
-abee1771cb56ae7a5cd732acad1d533a2ab1f077ff19456219db527bf891cac8  ./services/api/honor_api/c02_finance.py
+9582e5870d433f08af5a2185f7aaf718b64975dfd24ed603306ad77cb526c200  ./services/api/honor_api/c02_finance.py
 b6e23cfaee66215650edc084934f3985c3c3f6b631cf5ce070fadcefc7a795ad  ./services/api/honor_api/c02_rights.py
 02289c16f01368c05e6c1a46fcec5cde323ba224b852d03a9ce9b9341d0e9958  ./services/api/honor_api/c02_rules.py
 f647588d95c615e91411c021b1d53ee48774272683733695d4949ff68cf6820c  ./services/api/honor_api/config.py
@@ -262,7 +262,7 @@ a46e2971a4ac16607256812635d47f00a5c7f5be2edeaf64e953e4334d662f83  ./services/api
 1491245af80523604b6133d807c347df671afcf429f2db2215e62a371bc4c00d  ./services/api/honor_api/polli.py
 868f08f711e77a4311dc77271e0f938950dacdc4e1ce87fb223282315184a3fc  ./services/api/honor_api/redis_client.py
 e998d5083e3609e806d7259abe45040b631bade47e69b18adc53b0459b33b3e5  ./services/api/honor_api/request_context.py
-03c119e74404264ae6d3215ea58a3363745fc3ae371323318986a2f27002df40  ./services/api/honor_api/storage.py
+a0bb9adb89b2101044aba739da01f944bc7d28d7cde3ec191f1a39787860f007  ./services/api/honor_api/storage.py
 2692cd14c305a0364374f38cf3f29d23c1df346a8b630465c04df5f65ad55777  ./services/api/tests/test_health.py
 a529013cfe21db3c5c1198eadf9e0410016b6cb36c494e9bbb5671002c01fc7a  ./services/api/tests/test_polli.py
 ba1c42ef0a5e5244e73b1aa2067d076646cdccdaee71a634bb61b9b901824b02  ./services/intelligence/README.md

@@ -164,6 +164,11 @@ def summarize_finance(
             unreconciled += 1
         else:
             actual = D(actual + D(actual_cost))
+    # An estimate is still a represented cost and is usable for conservative
+    # booked economics.  UNKNOWN is reserved for rows that cannot be classified
+    # into the material cost model at all.
+    material_coverage = bool(costs) and all(str(row.get("cost_category") or "").strip() for row in costs if str(row.get("service")) != "PREPAID_FUNDING")
+    costs_complete = unreconciled == 0 or material_coverage
     return FinanceSummary(
         accrued_unverified=buckets[EarningState.ACCRUED_UNVERIFIED.value],
         approved=buckets[EarningState.APPROVED.value],
@@ -172,7 +177,7 @@ def summarize_finance(
         booked_spend=booked,
         actual_reconciled_spend=actual,
         unreconciled_cost_count=unreconciled,
-        costs_complete=unreconciled == 0,
+        costs_complete=costs_complete,
         as_of=as_of or datetime.now(timezone.utc),
         infrastructure_spend=infrastructure,
         polli_spend=polli,
