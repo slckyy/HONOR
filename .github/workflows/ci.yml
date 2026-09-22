@@ -1,4 +1,4 @@
-name: C01 CI
+name: C02 CI
 on:
   push:
   pull_request:

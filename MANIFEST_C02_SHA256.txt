@@ -1,6 +1,6 @@
 6a15d710b25e78a3ac69885d11d43e72ff5db2f2b410b0cc4f88cc1d9573a5ca  ./.dockerignore
 6075f092374cff917150302aad44a1d1ae006bba27012b3cdcebfae55751cc7c  ./.env.example
-cc9d7570d1f47d2187a23d6d344ed234974c6470b614c9b436c4721e38cfcdcb  ./.github/workflows/ci.yml
+7b51d4c9a41a72e991549ca07f3ec2d02880a4758970944b7dc0b4c5b3b336e2  ./.github/workflows/ci.yml
 c9bc0695265dbf45ab59bbbb2e63ef7c41e3d6e00b881cf8bbd827dc96126b71  ./.gitignore
 f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56  ./.nvmrc
 192cb4dab4f9506b4c83f818a4d0b3feeb6fe6e7deebd6c84438ce9da97046ca  ./AGENTS.md
@@ -245,11 +245,11 @@ e8153989a5ad057032bc51bcd7f744f2243d11359051031a226da72c9c23e7cd  ./scripts/test
 0706b6ff3090922fed77f3cf6bb4e2534ad980b8473d5434b71e9a4add892627  ./services/api/honor_api/__init__.py
 3a663dcbc9eb9cd2d18bafaf03d944302075585053607085625b8359c0ad650c  ./services/api/honor_api/app.py
 02425b888a24d97d543f48bb04cf18a38f1b76d9d85e983c6691d0618dba1b57  ./services/api/honor_api/auth.py
-00a4c1fd97165e2325decc6785f4b602b00927e24db4651122616cb29cb9eb9c  ./services/api/honor_api/c02_api.py
+e58f4c584878caf6fc8d9f25c81603a2591da23efc7176458c733f6174fd27bb  ./services/api/honor_api/c02_api.py
 e2fc5fdd66dd079973c00e9e8bddcf9c397578745df5df332b466d837207d33f  ./services/api/honor_api/c02_contracts.py
-0ae6a4523a4a543e13e3713cf594a3bdd16a90968370a60925e4812ba7a89a52  ./services/api/honor_api/c02_finance.py
-515476cf3b463158ee84e206d72bd213d89fc35e8de430e5a673ff6d5c777f1a  ./services/api/honor_api/c02_rights.py
-3414309ccc35f2db7a69233fda003b91b77ba79792e99dbbd01e92697caf16d3  ./services/api/honor_api/c02_rules.py
+aa38a7f94902a99ad6ba4af74e7f6bf8417938e0760e71d15328d0c7528359bd  ./services/api/honor_api/c02_finance.py
+b6e23cfaee66215650edc084934f3985c3c3f6b631cf5ce070fadcefc7a795ad  ./services/api/honor_api/c02_rights.py
+02289c16f01368c05e6c1a46fcec5cde323ba224b852d03a9ce9b9341d0e9958  ./services/api/honor_api/c02_rules.py
 f647588d95c615e91411c021b1d53ee48774272683733695d4949ff68cf6820c  ./services/api/honor_api/config.py
 37f8c0a7ba88787253874d72b997b2a28539bbf02858052eb7e28c694b272f58  ./services/api/honor_api/costs.py
 5b00b73e04daffe7e49afcc19b8af85c5a6d6db1168e21ddfdf96730ef67426c  ./services/api/honor_api/db.py
@@ -299,7 +299,7 @@ a1da0efc37a013595fcdf6354f91f61d41ebcaca68e757d927b8b6f12d99f704  ./tests/integr
 c60c8515af85309c7c74345639df8adfa9f5e9883416441324e9fc98ce44a045  ./tests/integration/test_durable_jobs.py
 dac535ee69aff2ec494a5b85d962163c1f2a32a7bc3ec986f78b0203266f7fe8  ./tests/integration/test_owner_context.sql
 2685561c315b70c76183a5325deae75aa091a22563e946abf5d2bb0e207c26c9  ./tests/integration/test_redis_auth.py
-696006dc50b633fcb252585a00934384cf9ae066e477155b9127a95b1c2d9a6c  ./tests/unit/test_c02_business.py
+2b71be7d3e8a8ec14045d476a2ac8b44d51f55df1ec576f0485128f77934c783  ./tests/unit/test_c02_business.py
 5da6e3da5591a883e1f31bb71f828fd37b2c20d78648bc1a30e1f28fe8f5ac7e  ./tests/unit/test_cost_governor.py
 32813746f433df5d03128da47f9264ed0b6d14ed85d0c62a4de35406595124e2  ./tests/unit/test_cost_ledger.py
 3abadcbb594984ec6bc91247956da8c597b18b3cd14e21a339a6acc8d297bca5  ./tests/unit/test_job_heartbeat.py
