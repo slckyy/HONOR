@@ -1,4 +1,4 @@
-name: C01 CI
+name: C02 CI
 on:
   push:
   pull_request:
@@ -75,6 +75,7 @@ jobs:
           python scripts/static_acceptance.py
           python scripts/check_lockfiles.py
           python scripts/check_c01_manifest.py
+          python scripts/check_c02_manifest.py
       - name: Python unit and integration tests
         run: python -m pytest -q -rs
       - name: Node dependencies from frozen lock

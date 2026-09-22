@@ -224,6 +224,31 @@ class DurableJobStore:
             idempotency_key=row["idempotency_key"],
         )
 
+    async def enqueue_in_transaction(self, connection, owner_user_id: str, spec: JobSpec, *, event_name: str, event_payload: dict[str, Any], actor_type: str = "SYSTEM", source_service: str = "api") -> DurableJob:
+        """Create durable job and enqueue event on a caller-owned transaction."""
+        del owner_user_id
+        spec.validate(); _EVENT_VALIDATOR.validate(event_payload)
+        if event_payload.get("event_name") != event_name:
+            raise ValueError("event payload event_name mismatch")
+        job_id = deterministic_job_id(spec.job_type, spec.idempotency_key)
+        dispatch_token = deterministic_dispatch_token(job_id)
+        event_key = f"job-enqueue:{spec.idempotency_key}:{event_name}"
+        event_id = deterministic_event_id(event_key)
+        row = await connection.fetchrow("""
+            INSERT INTO jobs(id,job_type,domain_entity_type,domain_entity_id,state,stage,attempt,max_attempts,idempotency_key,dispatch_token,correlation_id,run_id,timeout_seconds)
+            VALUES($1::uuid,$2,$3,$4::uuid,'queued',$5,0,$6,$7,$8::uuid,$9::uuid,$10::uuid,$11)
+            ON CONFLICT (idempotency_key) DO NOTHING
+            RETURNING id::text,dispatch_token::text,state::text,stage,version,idempotency_key
+        """, job_id,spec.job_type,spec.domain_entity_type,spec.domain_entity_id,spec.stage,spec.max_attempts,spec.idempotency_key,dispatch_token,spec.correlation_id,spec.run_id,spec.timeout_seconds)
+        if row is None:
+            row = await connection.fetchrow("SELECT id::text,dispatch_token::text,state::text,stage,version,idempotency_key FROM jobs WHERE idempotency_key=$1", spec.idempotency_key)
+        await connection.execute("""
+            INSERT INTO events(id,event_name,event_version,occurred_at,actor_type,actor_id,source_service,correlation_id,run_id,job_id,entity_type,entity_id,idempotency_key,payload)
+            VALUES($1::uuid,$2,1,statement_timestamp(),$3,NULL,$4,$5::uuid,$6::uuid,$7::uuid,$8,$9::uuid,$10,$11::jsonb)
+            ON CONFLICT (idempotency_key) DO NOTHING
+        """, event_id,event_name,actor_type,source_service,spec.correlation_id,spec.run_id,row["id"],spec.domain_entity_type,spec.domain_entity_id,event_key,json.dumps(event_payload,separators=(",",":"),sort_keys=True))
+        return DurableJob(id=row["id"],dispatch_token=row["dispatch_token"],state=row["state"],stage=row["stage"],version=row["version"],idempotency_key=row["idempotency_key"])
+
     async def enqueue_and_dispatch(self, owner_user_id: str, spec: JobSpec, **kwargs) -> DurableJob:
         """Commit durable truth first, then best-effort publish only its durable identity."""
         job = await self.enqueue(owner_user_id, spec, **kwargs)
