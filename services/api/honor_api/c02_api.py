@@ -231,9 +231,21 @@ async def record_submission(request: Request, owner: str = Depends(require_owner
         replay = await _preflight(conn, owner=owner, key=key, method="POST", path="/v1/submissions", body=raw)
         if replay is not None: return replay
         lineage = await conn.fetchrow("SELECT c.campaign_id FROM posts p JOIN clips c ON c.id=p.clip_id WHERE p.id=$1::uuid", body["post_id"])
-        if lineage is None: raise HonorError(404, "NOT_FOUND", "Post not found.")
+        if lineage is None: raise HonorError(409, "CONFLICT", "Post lineage is required for submission.")
         if str(lineage["campaign_id"]) != body["campaign_id"]: raise HonorError(409, "CONFLICT", "Submission campaign does not match post lineage.")
-        sid = str(uuid4()); await conn.execute("INSERT INTO submissions(id,campaign_id,post_id,submitted_at,submission_reference,status,evidence_object_key,idempotency_key) VALUES($1::uuid,$2::uuid,$3::uuid,$4,$5,$6::submission_status_enum,(SELECT object_key FROM uploads WHERE id=$7::uuid AND owner_user_id=$8::uuid),$9)", sid, body["campaign_id"], body["post_id"], body["submitted_at"], body["submission_reference"], body["status"], body["evidence_upload_id"], owner, key)
+        existing = await conn.fetchrow("SELECT * FROM submissions WHERE campaign_id=$1::uuid AND post_id=$2::uuid FOR UPDATE", body["campaign_id"], body["post_id"])
+        evidence_key = await conn.fetchval("SELECT object_key FROM uploads WHERE id=$1::uuid AND owner_user_id=$2::uuid AND state='VERIFIED'", body["evidence_upload_id"], owner) if body.get("evidence_upload_id") else None
+        if body.get("evidence_upload_id") and evidence_key is None:
+            raise HonorError(409, "CONFLICT", "Evidence upload must be owned by the owner and VERIFIED.")
+        if existing is None:
+            sid = str(uuid4())
+            await conn.execute("INSERT INTO submissions(id,campaign_id,post_id,submitted_at,submission_reference,status,evidence_object_key,idempotency_key) VALUES($1::uuid,$2::uuid,$3::uuid,$4,$5,$6::submission_status_enum,$7,$8)", sid, body["campaign_id"], body["post_id"], body["submitted_at"], body["submission_reference"], body["status"], evidence_key, key)
+        else:
+            sid = str(existing["id"])
+            try:
+                await conn.execute("UPDATE submissions SET status=$2::submission_status_enum,submission_reference=COALESCE($3,submission_reference),evidence_object_key=COALESCE($4,evidence_object_key),updated_at=statement_timestamp() WHERE id=$1::uuid", sid, body["status"], body.get("submission_reference"), evidence_key)
+            except Exception as exc:
+                raise HonorError(409, "INVALID_STATE_TRANSITION", "Submission state transition is not permitted.") from exc
         row = await conn.fetchrow("SELECT * FROM submissions WHERE id=$1::uuid", sid); response = {"id":sid,"campaign_id":str(row["campaign_id"]),"post_id":str(row["post_id"]),"submitted_at":_iso(row["submitted_at"]),"submission_reference":row["submission_reference"],"status":str(row["status"]),"created_at":_iso(row["created_at"]),"updated_at":_iso(row["updated_at"])}; validate_contract("SubmissionRecord", response); await _store_response(conn, owner=owner, key=key, method="POST", path="/v1/submissions", body=raw, status=201, response=response); return response
 
 
@@ -317,7 +329,11 @@ async def finance_summary(owner: str = Depends(require_owner), as_of: datetime |
     async with owner_transaction(owner) as conn:
         earnings = [dict(row) for row in await conn.fetch("SELECT state,amount_usd,recognized_at FROM earnings WHERE recognized_at <= $1", cutoff)]
         costs = [dict(row) for row in await conn.fetch("SELECT service,cost_category,estimated_cost_usd,actual_cost_usd,unit,reconciled_at,external_usage_id,incurred_at FROM cost_ledger WHERE incurred_at <= $1", cutoff)]
-    result = summarize_finance(earnings, costs, as_of=cutoff, period_start=month_start).to_openapi_dict(); validate_contract("FinanceSummary", result); return result
+    lifetime = summarize_finance(earnings, costs, as_of=cutoff)
+    month = summarize_finance(earnings, costs, as_of=cutoff, period_start=month_start)
+    result = lifetime.to_openapi_dict()
+    result["monthly_target_progress_usd"] = usd(month.confirmed_gross_revenue)
+    validate_contract("FinanceSummary", result); return result
 
 
 @router.get("/costs/summary")
@@ -344,3 +360,12 @@ def build_c02_polli_gateway_handlers(conn):
     async def fact_evidence(_args): return {"ok":False,"tool_name":"fact_evidence","tool_version":1,"as_of":_now().isoformat(),"truth_label":"UNKNOWN","data":None,"sources":[],"warnings":[],"cost_usd":"0.000000","page":None,"error":{"code":"NOT_FOUND","message":"No fact evidence locator was supplied.","retryable":False}}
     async def account_performance(_args): return polli_envelope("account_performance", {"items": []})
     return {"finance_summary":finance,"cost_summary":costs,"target_progress":target,"campaign_performance":campaign_performance,"fact_evidence":fact_evidence,"account_performance":account_performance}
+
+
+def build_c02_polli_gateway(conn, *, registry=None, rate_limit=None, audit=None):
+    """Compose the C02 handlers through the canonical Polli gateway."""
+    from .polli import PolliGateway
+    gateway = PolliGateway(registry=registry, rate_limit=rate_limit, audit=audit)
+    for name, handler in build_c02_polli_gateway_handlers(conn).items():
+        gateway.register_read_only(name, handler)
+    return gateway

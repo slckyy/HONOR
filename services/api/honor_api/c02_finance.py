@@ -188,20 +188,27 @@ def cost_summary_from_rows(rows: list[dict[str, Any]], *, month: str | None = No
     committed = D("0")
     queued = D("0")
     groups: dict[str, dict[str, Decimal | None]] = {}
+    # Aggregate prepaid balances first so accounting is independent of ledger
+    # row order (usage can arrive before the funding entry in an import).
+    for row in rows:
+        if str(row.get("service")) == "PREPAID_FUNDING":
+            provider = str(row.get("provider") or row.get("service"))
+            estimate = D(row.get("estimated_cost_usd", "0"))
+            actual = row.get("actual_cost_usd")
+            amount = D(actual if actual is not None else estimate)
+            prepaid = D(prepaid + amount)
+            prepaid_by_provider[provider] = D(prepaid_by_provider.get(provider, D("0")) + amount)
+            cash_spend = D(cash_spend + amount)
+            group = groups.setdefault("PREPAID_FUNDING", {"estimated": D("0"), "actual": None})
+            group["estimated"] = D(group["estimated"] + estimate)
+            if actual is not None:
+                group["actual"] = D((group["actual"] or D("0")) + D(actual))
     for row in rows:
         service = str(row.get("service"))
         provider = str(row.get("provider") or service)
         estimate = D(row.get("estimated_cost_usd", "0"))
         actual = row.get("actual_cost_usd")
         if service == "PREPAID_FUNDING":
-            amount = D(actual if actual is not None else estimate)
-            prepaid = D(prepaid + amount)
-            prepaid_by_provider[provider] = D(prepaid_by_provider.get(provider, D("0")) + amount)
-            cash_spend = D(cash_spend + amount)
-            group = groups.setdefault(service, {"estimated": D("0"), "actual": None})
-            group["estimated"] = D(group["estimated"] + estimate)
-            if actual is not None:
-                group["actual"] = D((group["actual"] or D("0")) + D(actual))
             continue
         amount = D(actual if actual is not None else estimate)
         if actual is None:
