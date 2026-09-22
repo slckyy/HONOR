@@ -7,29 +7,29 @@ This document is a builder handoff for Checkpoint Manager review. It is not an a
 - Repository: `slckyy/HONOR`
 - Final branch: `checkpoint/c02`
 - Base C01 SHA: `dbd7c97720f8b82d55420317adb44edff2ccfd86`
-- Final C02 commit SHA: `PENDING_FINAL_COMMIT_SHA`
+- Final C02 commit SHA: `fdd868ab3a66fda6fa66eff671ce4558d1494a2c`
 - PR: `#1`, `checkpoint/c02 -> main`, open and not merged
 - Frozen reviewed predecessor: `dadb95f646566d09518d6c6621616b58552fd728`
 - Workflow: `C02 CI` (retains every C01 gate)
-- Exact final Actions run ID: `PENDING_FINAL_ACTIONS_RUN_ID`
-- Final workflow conclusion: `PENDING_FINAL_ACTIONS_CONCLUSION`
+- Exact final Actions run ID: `35671019929`
+- Final workflow conclusion: `success`
 
 ## Verification evidence
 
 - C01 baseline run `35654987537`: succeeded on the frozen C01 checkpoint.
-- Python: `PENDING_FINAL_PASSED` passed, `PENDING_FINAL_SKIPPED` skipped, `PENDING_FINAL_FAILED` failed.
-- C02 integration tests: `PENDING_C02_INTEGRATION_RESULT` (campaign/rules/seal/activation, rights versions, uploads, submissions, analytics, payouts, finance/cost, and idempotency through `honor_app`).
-- Web tests: `PENDING_WEB_RESULT`.
-- Typecheck: `PENDING_TYPECHECK_RESULT`.
-- Next build: `PENDING_NEXT_BUILD_RESULT`.
-- API Docker build: `PENDING_API_DOCKER_RESULT`.
-- Worker Docker build: `PENDING_WORKER_DOCKER_RESULT`.
-- Web public-config Docker build: `PENDING_WEB_DOCKER_RESULT`.
-- Development Compose config: `PENDING_DEV_COMPOSE_RESULT`.
-- Production Compose config: `PENDING_PROD_COMPOSE_RESULT`.
-- Authenticated Redis: `PENDING_REDIS_RESULT`.
-- Celery foundation: `PENDING_CELERY_RESULT`.
-- C00 drift, C01 regression, secret scan, lock checks, and C02 manifest: `PENDING_STATIC_RESULT`.
+- Python: `93 passed, 0 skipped, 0 failed`.
+- C02 integration tests: no dedicated C02 integration module was present in this run; the retained Postgres-backed integration suite passed as part of the 93-test result.
+- Web tests: passed.
+- Typecheck: passed.
+- Next build: passed.
+- API Docker build: passed.
+- Worker Docker build: passed.
+- Web public-config Docker build: passed.
+- Development Compose config: passed.
+- Production Compose config: passed.
+- Authenticated Redis: passed.
+- Celery foundation: passed.
+- C00 drift, C01 regression, secret scan, lock checks, and C02 manifest: passed.
 
 ## C02 implementation
 
@@ -55,7 +55,7 @@ This document is a builder handoff for Checkpoint Manager review. It is not an a
 ## Operational accounting
 
 - Spend requested: `$0` paid services; no secrets or credentials were requested.
-- Governor exposure: derived from the exact cost-ledger formula, with full Month-1 prepaid cash counted at purchase and remaining credit shielding only queued unfunded exposure.
+- Governor exposure: derived from the cost-ledger formula, with full Month-1 prepaid cash counted at purchase and remaining credit shielding usage/queued work until exhausted.
 - Mocks/fixtures remaining: deterministic campaign normalization fixture and local/test storage adapter only; no LLM is required.
 - Live integrations not verified: real provider APIs, real R2 production credentials, and social-platform submission APIs remain owner-controlled adapters.
 
