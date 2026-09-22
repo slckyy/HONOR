@@ -206,7 +206,11 @@ def cost_summary_from_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     # Only queued work above the remaining prepaid credit is unfunded.  Cash
     # purchases are already counted in full and are never counted again when
     # their credit is consumed.
-    admitted_unfunded = D(max(Decimal("0"), queued - remaining_credit))
+    # Usage consumes prepaid credit first.  Once the credit is exhausted,
+    # usage above the remaining balance is real governor exposure; queued work
+    # is treated the same way when it is admitted without sufficient credit.
+    usage_unfunded = D(max(Decimal("0"), actual_spend - prepaid))
+    admitted_unfunded = D(max(usage_unfunded, queued - remaining_credit))
     exposure = D(cash_spend + committed + admitted_unfunded)
     now = datetime.now(timezone.utc)
     return {
