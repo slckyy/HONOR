@@ -245,7 +245,7 @@ e8153989a5ad057032bc51bcd7f744f2243d11359051031a226da72c9c23e7cd  ./scripts/test
 0706b6ff3090922fed77f3cf6bb4e2534ad980b8473d5434b71e9a4add892627  ./services/api/honor_api/__init__.py
 3a663dcbc9eb9cd2d18bafaf03d944302075585053607085625b8359c0ad650c  ./services/api/honor_api/app.py
 02425b888a24d97d543f48bb04cf18a38f1b76d9d85e983c6691d0618dba1b57  ./services/api/honor_api/auth.py
-e58f4c584878caf6fc8d9f25c81603a2591da23efc7176458c733f6174fd27bb  ./services/api/honor_api/c02_api.py
+eef0b1e62b756d22b6db20140262ecdab70cb9ac3bdd9fb61ac6f89e0b54ba09  ./services/api/honor_api/c02_api.py
 e2fc5fdd66dd079973c00e9e8bddcf9c397578745df5df332b466d837207d33f  ./services/api/honor_api/c02_contracts.py
 aa38a7f94902a99ad6ba4af74e7f6bf8417938e0760e71d15328d0c7528359bd  ./services/api/honor_api/c02_finance.py
 b6e23cfaee66215650edc084934f3985c3c3f6b631cf5ce070fadcefc7a795ad  ./services/api/honor_api/c02_rights.py
