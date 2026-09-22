@@ -68,10 +68,11 @@ def latest_current_rights(
         if version.source_id == source_id
         and (campaign_id is None or campaign_id in version.campaign_ids)
         and version.evidence_captured_at <= at
-        and (version.expires_at is None or version.expires_at > at)
     ]
     if not candidates:
         return None
+    # The newest committed version is authoritative even when it is expired
+    # or restrictive.  Never fall back to an older, broader version.
     return max(candidates, key=lambda item: item.rights_version)
 
 
@@ -104,7 +105,9 @@ def stage_allowed(
         if isinstance(allowed_platforms, list) and platform not in allowed_platforms:
             return AuthorizationDecision.BLOCKED
         platform_limit = rights.platform_limits.get(platform, {})
-        max_duration = platform_limit.get("max_duration_seconds")
+        if platform_limit.get("allowed") is False:
+            return AuthorizationDecision.BLOCKED
+        max_duration = platform_limit.get("max_clip_seconds")
         if duration_seconds is not None and max_duration is not None and duration_seconds > max_duration:
             return AuthorizationDecision.BLOCKED
     return AuthorizationDecision.ALLOWED
@@ -113,6 +116,9 @@ def stage_allowed(
 def evaluate_account_eligibility(
     campaign_rules: dict[str, Any], account_facts: dict[str, Any]
 ) -> AuthorizationDecision:
+    material_keys = ("eligible_platforms", "eligible_regions", "eligible_account_requirements")
+    if any(key in campaign_rules and campaign_rules[key] is None for key in material_keys):
+        return AuthorizationDecision.UNKNOWN
     platforms = campaign_rules.get("eligible_platforms")
     if platforms is not None and account_facts.get("platform") not in platforms:
         return AuthorizationDecision.BLOCKED
@@ -176,7 +182,7 @@ class SourceRightsRepository:
 
     async def current(self, *, source_id: str, campaign_id: str, at: datetime | None = None):
         at = at or datetime.now(timezone.utc)
-        return await self.conn.fetchrow("""SELECT r.* FROM source_rights r JOIN source_rights_campaigns rc ON rc.source_rights_id=r.id WHERE r.source_id=$1::uuid AND rc.campaign_id=$2::uuid AND r.evidence_captured_at<= $3 AND r.committed_at<= $3 AND (r.expires_at IS NULL OR r.expires_at>$3) ORDER BY r.rights_version DESC LIMIT 1""", source_id, campaign_id, at)
+        return await self.conn.fetchrow("""SELECT r.* FROM source_rights r JOIN source_rights_campaigns rc ON rc.source_rights_id=r.id WHERE r.source_id=$1::uuid AND rc.campaign_id=$2::uuid AND r.evidence_captured_at<= $3 AND r.committed_at<= $3 ORDER BY r.rights_version DESC LIMIT 1""", source_id, campaign_id, at)
 
     async def stage_allowed(self, *, rights_id: str, campaign_id: str, platform: str, stage: str, at: datetime | None = None) -> bool:
         at = at or datetime.now(timezone.utc)

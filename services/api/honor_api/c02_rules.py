@@ -169,9 +169,7 @@ def validate_typed_value(rule_key: str, typed_value: dict[str, Any]) -> None:
 def validate_rule(rule: NormalizedRule) -> None:
     if rule.rule_key not in CANONICAL_RULE_KEYS:
         raise ValueError("non-canonical campaign rule key")
-    # OWNER_MANUAL was used by pre-C02 helper callers; persisted DB writes use
-    # the frozen OWNER enum value exclusively.
-    if rule.verified_by not in {"API", "IMPORTER", "OWNER", "BUILDER", "OWNER_MANUAL"}:
+    if rule.verified_by not in {"API", "IMPORTER", "OWNER", "BUILDER"}:
         raise ValueError("verified_by must use the frozen enum")
     if rule.knowledge_state == KnowledgeState.UNKNOWN:
         if rule.typed_value is not None:

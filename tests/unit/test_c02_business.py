@@ -43,7 +43,7 @@ def test_unknown_rule_must_not_have_typed_value():
         evidence_snapshot_id=None,
         evidence_locator=None,
         verified_at=None,
-        verified_by="OWNER_MANUAL",
+        verified_by="OWNER",
     )
     with pytest.raises(ValueError, match="UNKNOWN"):
         validate_rule(rule)
@@ -60,7 +60,7 @@ def test_complete_rule_set_hash_requires_32_rules():
             evidence_snapshot_id=None,
             evidence_locator=None,
             verified_at=None,
-            verified_by="OWNER_MANUAL",
+            verified_by="OWNER",
         )
         for key in CANONICAL_RULE_KEYS
     ]
@@ -72,7 +72,7 @@ def test_complete_rule_set_hash_requires_32_rules():
         evidence_snapshot_id="00000000-0000-0000-0000-000000000001",
         evidence_locator="fixture",
         verified_at=now,
-        verified_by="OWNER_MANUAL",
+        verified_by="OWNER",
     )
     digest = seal_rule_set_hash(rules)
     assert len(digest) == 64
@@ -139,8 +139,8 @@ def test_self_funded_true_only_confirmed_revenue_exceeds_complete_costs():
 def test_cost_summary_uses_c01_governor_thresholds():
     result = cost_summary_from_rows(
         [
-            {"service": "PREPAID_FUNDING", "estimated_cost_usd": "20.000000", "actual_cost_usd": "20.000000"},
-            {"service": "OPENAI", "unit": "OPERATION", "estimated_cost_usd": "42.990000", "actual_cost_usd": "42.990000"},
+            {"provider": "OPENAI", "service": "PREPAID_FUNDING", "estimated_cost_usd": "20.000000", "actual_cost_usd": "20.000000"},
+            {"provider": "OPENAI", "service": "OPENAI", "unit": "OPERATION", "estimated_cost_usd": "42.990000", "actual_cost_usd": "42.990000"},
             {"service": "GPU", "unit": "COMMITTED_OPERATION", "estimated_cost_usd": "0.020000", "actual_cost_usd": None},
         ]
     )

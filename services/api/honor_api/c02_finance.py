@@ -123,11 +123,21 @@ class FinanceSummary:
         }
 
 
-def summarize_finance(earnings: list[dict[str, Any]], costs: list[dict[str, Any]]) -> FinanceSummary:
+def summarize_finance(
+    earnings: list[dict[str, Any]],
+    costs: list[dict[str, Any]],
+    *,
+    as_of: datetime | None = None,
+    period_start: datetime | None = None,
+) -> FinanceSummary:
     buckets = {state.value: D("0") for state in EarningState}
     for row in earnings:
         state = EarningState(row["state"])
         if state == EarningState.VOIDED:
+            continue
+        if as_of is not None and row.get("recognized_at") is not None and row["recognized_at"] > as_of:
+            continue
+        if period_start is not None and row.get("recognized_at") is not None and row["recognized_at"] < period_start:
             continue
         buckets[state.value] = D(buckets[state.value] + D(row["amount_usd"]))
     booked = D("0")
@@ -163,14 +173,15 @@ def summarize_finance(earnings: list[dict[str, Any]], costs: list[dict[str, Any]
         actual_reconciled_spend=actual,
         unreconciled_cost_count=unreconciled,
         costs_complete=unreconciled == 0,
-        as_of=datetime.now(timezone.utc),
+        as_of=as_of or datetime.now(timezone.utc),
         infrastructure_spend=infrastructure,
         polli_spend=polli,
     )
 
 
-def cost_summary_from_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
+def cost_summary_from_rows(rows: list[dict[str, Any]], *, month: str | None = None) -> dict[str, Any]:
     prepaid = D("0")
+    prepaid_by_provider: dict[str, Decimal] = {}
     cash_spend = D("0")
     actual_spend = D("0")
     estimated_unreconciled = D("0")
@@ -179,11 +190,14 @@ def cost_summary_from_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     groups: dict[str, dict[str, Decimal | None]] = {}
     for row in rows:
         service = str(row.get("service"))
+        provider = str(row.get("provider") or service)
         estimate = D(row.get("estimated_cost_usd", "0"))
         actual = row.get("actual_cost_usd")
         if service == "PREPAID_FUNDING":
-            prepaid = D(prepaid + D(actual if actual is not None else estimate))
-            cash_spend = D(cash_spend + D(actual if actual is not None else estimate))
+            amount = D(actual if actual is not None else estimate)
+            prepaid = D(prepaid + amount)
+            prepaid_by_provider[provider] = D(prepaid_by_provider.get(provider, D("0")) + amount)
+            cash_spend = D(cash_spend + amount)
             group = groups.setdefault(service, {"estimated": D("0"), "actual": None})
             group["estimated"] = D(group["estimated"] + estimate)
             if actual is not None:
@@ -198,24 +212,29 @@ def cost_summary_from_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 queued = D(queued + amount)
         else:
             actual_spend = D(actual_spend + amount)
+            # A prepaid balance can shield only usage from the same provider.
+            provider_credit = prepaid_by_provider.get(provider, D("0"))
+            consumed = D(min(provider_credit, amount))
+            prepaid_by_provider[provider] = D(provider_credit - consumed)
+            cash_spend = D(cash_spend + amount - consumed)
         group = groups.setdefault(service, {"estimated": D("0"), "actual": None})
         group["estimated"] = D(group["estimated"] + estimate)
         if actual is not None:
             group["actual"] = D((group["actual"] or D("0")) + D(actual))
-    remaining_credit = D(max(Decimal("0"), prepaid - actual_spend))
+    remaining_credit = D(sum(prepaid_by_provider.values(), Decimal("0")))
     # Only queued work above the remaining prepaid credit is unfunded.  Cash
     # purchases are already counted in full and are never counted again when
     # their credit is consumed.
     # Usage consumes prepaid credit first.  Once the credit is exhausted,
     # usage above the remaining balance is real governor exposure; queued work
     # is treated the same way when it is admitted without sufficient credit.
-    usage_unfunded = D(max(Decimal("0"), actual_spend - prepaid))
+    usage_unfunded = D("0")
     admitted_unfunded = D(max(usage_unfunded, queued - remaining_credit))
     exposure = D(cash_spend + committed + admitted_unfunded)
     now = datetime.now(timezone.utc)
     return {
         "as_of": now.isoformat(),
-        "month": now.strftime("%Y-%m"),
+        "month": month or now.strftime("%Y-%m"),
         "cash_spend_counted_usd": usd(cash_spend),
         "unpaid_committed_usd": usd(committed),
         "admitted_queued_unfunded_usd": usd(admitted_unfunded),

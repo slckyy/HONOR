@@ -301,16 +301,26 @@ async def payout_events(request: Request, owner: str = Depends(require_owner), i
 
 
 @router.get("/finance/summary")
-async def finance_summary(owner: str = Depends(require_owner)):
+async def finance_summary(owner: str = Depends(require_owner), as_of: datetime | None = Query(default=None)):
+    cutoff = as_of or _now()
+    month_start = cutoff.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     async with owner_transaction(owner) as conn:
-        earnings = [dict(row) for row in await conn.fetch("SELECT state,amount_usd FROM earnings")]; costs = [dict(row) for row in await conn.fetch("SELECT service,cost_category,estimated_cost_usd,actual_cost_usd,unit,reconciled_at,external_usage_id FROM cost_ledger")]
-    result = summarize_finance(earnings, costs).to_openapi_dict(); validate_contract("FinanceSummary", result); return result
+        earnings = [dict(row) for row in await conn.fetch("SELECT state,amount_usd,recognized_at FROM earnings WHERE recognized_at <= $1", cutoff)]
+        costs = [dict(row) for row in await conn.fetch("SELECT service,cost_category,estimated_cost_usd,actual_cost_usd,unit,reconciled_at,external_usage_id,incurred_at FROM cost_ledger WHERE incurred_at <= $1", cutoff)]
+    result = summarize_finance(earnings, costs, as_of=cutoff, period_start=month_start).to_openapi_dict(); validate_contract("FinanceSummary", result); return result
 
 
 @router.get("/costs/summary")
-async def costs_summary(owner: str = Depends(require_owner)):
-    async with owner_transaction(owner) as conn: rows = [dict(row) for row in await conn.fetch("SELECT provider,service,cost_category,estimated_cost_usd,actual_cost_usd,unit,reconciled_at,external_usage_id FROM cost_ledger")]
-    result = cost_summary_from_rows(rows); validate_contract("CostSummary", result); return result
+async def costs_summary(owner: str = Depends(require_owner), month: str | None = Query(default=None, pattern=r"^[0-9]{4}-[0-9]{2}$")):
+    if month is None:
+        month = _now().strftime("%Y-%m")
+    try:
+        month_start = datetime.strptime(month, "%Y-%m").replace(tzinfo=timezone.utc)
+    except ValueError as exc:
+        raise HonorError(422, "VALIDATION_ERROR", "month must be YYYY-MM") from exc
+    month_end = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+    async with owner_transaction(owner) as conn: rows = [dict(row) for row in await conn.fetch("SELECT provider,service,cost_category,estimated_cost_usd,actual_cost_usd,unit,reconciled_at,external_usage_id,incurred_at FROM cost_ledger WHERE incurred_at >= $1 AND incurred_at < $2", month_start, month_end)]
+    result = cost_summary_from_rows(rows, month=month); validate_contract("CostSummary", result); return result
 
 
 def build_c02_polli_gateway_handlers(conn):
