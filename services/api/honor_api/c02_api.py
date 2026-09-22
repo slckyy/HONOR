@@ -18,7 +18,7 @@ from .c02_rules import CANONICAL_RULE_KEYS, KnowledgeState, validate_owner_url
 from .db import owner_transaction
 from .errors import HonorError
 from .idempotency import canonical_response_hash, request_hash
-from .jobs import DurableJobStore, JobSpec
+from .jobs import DurableJob, DurableJobStore, JobSpec, deterministic_dispatch_token, deterministic_event_id, deterministic_job_id
 from .storage import safe_key, storage
 
 router = APIRouter(prefix="/v1")
@@ -70,6 +70,27 @@ async def _emit_fact_event(conn, *, event_name: str, entity_type: str, entity_id
         VALUES($1::uuid,$2,1,statement_timestamp(),'OWNER','api',$3::uuid,$4,$5::uuid,$6,$7::jsonb)
         ON CONFLICT (idempotency_key) DO NOTHING
     """, uuid4(), event_name, correlation_id, entity_type, entity_id, f"fact:{event_name}:{idempotency_key}", json.dumps(payload, separators=(",", ":"), sort_keys=True))
+
+
+async def _enqueue_in_transaction(conn, spec: JobSpec, *, event_name: str, payload: dict[str, Any]) -> DurableJob:
+    spec.validate()
+    job_id = deterministic_job_id(spec.job_type, spec.idempotency_key)
+    dispatch_token = deterministic_dispatch_token(job_id)
+    event_key = f"job-enqueue:{spec.idempotency_key}:{event_name}"
+    row = await conn.fetchrow("""
+        INSERT INTO jobs(id,job_type,domain_entity_type,domain_entity_id,state,stage,attempt,max_attempts,idempotency_key,dispatch_token,correlation_id,run_id,timeout_seconds)
+        VALUES($1::uuid,$2,$3,$4::uuid,'queued',$5,0,$6,$7,$8::uuid,$9::uuid,$10::uuid,$11)
+        ON CONFLICT (idempotency_key) DO NOTHING
+        RETURNING id::text,dispatch_token::text,state::text,stage,version,idempotency_key
+    """, job_id,spec.job_type,spec.domain_entity_type,spec.domain_entity_id,spec.stage,spec.max_attempts,spec.idempotency_key,dispatch_token,spec.correlation_id,spec.run_id,spec.timeout_seconds)
+    if row is None:
+        row = await conn.fetchrow("SELECT id::text,dispatch_token::text,state::text,stage,version,idempotency_key FROM jobs WHERE idempotency_key=$1", spec.idempotency_key)
+    await conn.execute("""
+        INSERT INTO events(id,event_name,event_version,occurred_at,actor_type,source_service,correlation_id,run_id,job_id,entity_type,entity_id,idempotency_key,payload)
+        VALUES($1::uuid,$2,1,statement_timestamp(),'SYSTEM','api',$3::uuid,$4::uuid,$5::uuid,$6,$7::uuid,$8,$9::jsonb)
+        ON CONFLICT (idempotency_key) DO NOTHING
+    """, deterministic_event_id(event_key), event_name, spec.correlation_id, spec.run_id, row["id"], spec.domain_entity_type, spec.domain_entity_id, event_key, json.dumps(payload, separators=(",", ":"), sort_keys=True))
+    return DurableJob(id=row["id"], dispatch_token=row["dispatch_token"], state=row["state"], stage=row["stage"], version=row["version"], idempotency_key=row["idempotency_key"])
 
 
 async def _validated_body(request: Request, schema: str) -> tuple[dict[str, Any], bytes]:
@@ -164,7 +185,7 @@ async def import_campaign(request: Request, owner: str = Depends(require_owner),
             await conn.execute("INSERT INTO campaign_rule_items(id,campaign_id,terms_snapshot_id,rule_key,knowledge_state,typed_value,confidence,evidence_snapshot_id,evidence_locator,verified_at,verified_by) VALUES($1,$2::uuid,$3::uuid,$4,$5::knowledge_state_enum,$6,$7,$3::uuid,$8,statement_timestamp(),'OWNER')", uuid4(), campaign_id, snapshot_id, rule_key, state, typed, Decimal("1.000") if state == "KNOWN" else None, body.get("campaign_url"))
         await conn.fetchval("SELECT honor_seal_campaign_rule_set($1::uuid,$2::uuid,1)", campaign_id, snapshot_id); await conn.fetchval("SELECT honor_activate_campaign_rule_snapshot($1::uuid,$2::uuid)", campaign_id, snapshot_id)
         spec = JobSpec("campaign_import", "campaign", campaign_id, "campaign_import", f"campaign-import:{key}", correlation_id)
-        job = await DurableJobStore().enqueue_in_transaction(conn, owner, spec, event_name="CAMPAIGN_DISCOVERED", event_payload={"event_name":"CAMPAIGN_DISCOVERED","subject_type":"campaign","subject_id":campaign_id,"state":"VERIFYING","reason_code":None,"evidence_id":snapshot_id,"amount_usd":None,"related_ids":[]})
+        job = await _enqueue_in_transaction(conn, spec, event_name="CAMPAIGN_DISCOVERED", payload={"event_name":"CAMPAIGN_DISCOVERED","subject_type":"campaign","subject_id":campaign_id,"state":"VERIFYING","reason_code":None,"evidence_id":snapshot_id,"amount_usd":None,"related_ids":[]})
         response = {"campaign_id": campaign_id, "job_id": job.id, "status": "VERIFYING", "correlation_id": correlation_id}; validate_contract("CampaignImportAccepted", response)
         await _store_response(conn, owner=owner, key=key, method="POST", path="/v1/campaigns/import", body=raw_body, status=202, response=response)
     if job.state == "queued":
@@ -204,7 +225,7 @@ async def import_source(request: Request, owner: str = Depends(require_owner), i
         await conn.fetchval("SELECT honor_commit_source_rights_version($1::uuid,$2::uuid,1,NULL,$3::source_eligibility_enum,$4::jsonb,$5::jsonb,$6,$7,$8,statement_timestamp(),$9::timestamptz,$10,$11,$12::uuid[])", uuid4(), source_id, rights["eligibility"], json.dumps(rights["authorized_uses"]), json.dumps(rights["platform_limits"]), rights["evidence_type"], evidence_uri, evidence_object, rights.get("expires_at"), None, record_hash, [body["campaign_id"]])
         event_name = "SOURCE_ELIGIBILITY_VERIFIED" if rights["eligibility"] == "ELIGIBLE" else "CAMPAIGN_RULES_BLOCKED_UNKNOWN"
         spec = JobSpec("source_import", "source", source_id, "source_ingest", f"source-import:{key}", correlation_id)
-        job = await DurableJobStore().enqueue_in_transaction(conn, owner, spec, event_name=event_name, event_payload={"event_name":event_name,"subject_type":"source","subject_id":source_id,"state":ingest,"reason_code":None,"evidence_id":None,"amount_usd":None,"related_ids":[body["campaign_id"]]})
+        job = await _enqueue_in_transaction(conn, spec, event_name=event_name, payload={"event_name":event_name,"subject_type":"source","subject_id":source_id,"state":ingest,"reason_code":None,"evidence_id":None,"amount_usd":None,"related_ids":[body["campaign_id"]]})
         response = {"source_id":source_id,"job_id":job.id,"ingest_status":ingest,"correlation_id":correlation_id}; validate_contract("SourceImportAccepted", response)
         await _store_response(conn, owner=owner, key=key, method="POST", path="/v1/sources/import", body=raw_body, status=202, response=response)
     if job.state == "queued":

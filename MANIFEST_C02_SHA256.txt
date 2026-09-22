@@ -245,7 +245,7 @@ e8153989a5ad057032bc51bcd7f744f2243d11359051031a226da72c9c23e7cd  ./scripts/test
 0706b6ff3090922fed77f3cf6bb4e2534ad980b8473d5434b71e9a4add892627  ./services/api/honor_api/__init__.py
 6761c62849990e4df326f343be255cacc48dc8e9c65b47cd5cd765a5cef64a7e  ./services/api/honor_api/app.py
 02425b888a24d97d543f48bb04cf18a38f1b76d9d85e983c6691d0618dba1b57  ./services/api/honor_api/auth.py
-660def6bb9e7d91e0a215b721925da7aff9149d9b94ee3edfd144243c0d5b478  ./services/api/honor_api/c02_api.py
+55192b76dcc654baa3272b1e12d4df47ed475b7634da532d8ec500f50e5cdeb8  ./services/api/honor_api/c02_api.py
 e2fc5fdd66dd079973c00e9e8bddcf9c397578745df5df332b466d837207d33f  ./services/api/honor_api/c02_contracts.py
 9582e5870d433f08af5a2185f7aaf718b64975dfd24ed603306ad77cb526c200  ./services/api/honor_api/c02_finance.py
 b6e23cfaee66215650edc084934f3985c3c3f6b631cf5ce070fadcefc7a795ad  ./services/api/honor_api/c02_rights.py
